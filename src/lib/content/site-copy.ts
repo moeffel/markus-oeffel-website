@@ -13,13 +13,29 @@ export type LegalSection = {
   infoItems?: readonly LegalInfoItem[];
 };
 
+type LandingFocusArea = {
+  title: string;
+  note: string;
+};
+
 export const LANDING_COPY: Record<
   Language,
   {
     headline: string;
     sub: string;
     trustPoints: readonly string[];
-    askSignalLine: string;
+    aboutEyebrow: string;
+    aboutTitle: string;
+    aboutSubtitle: string;
+    aboutParagraphs: readonly string[];
+    aboutHighlights: readonly string[];
+    askTitle: string;
+    askSubtitle: string;
+    askExamplePrompts: readonly string[];
+    ragTitle: string;
+    ragSteps: readonly string[];
+    focusTitle: string;
+    focusAreas: readonly LandingFocusArea[];
   }
 > = {
   de: {
@@ -31,7 +47,53 @@ export const LANDING_COPY: Record<
       "AI nur mit belastbaren Quellen und Kostenkontrolle",
       "CFA Level I Kandidat — Prüfung geplant für August 2026",
     ],
-    askSignalLine: "Antworten mit Quellen, nicht mit Halluzinationen.",
+    aboutEyebrow: "About me",
+    aboutTitle: "Markus Öffel — Tech × Quant × AI Engineering.",
+    aboutSubtitle:
+      "Ich baue belastbare Systeme für FinTech, Risiko-Entscheidungen und produktionsreife AI-Anwendungen.",
+    aboutParagraphs: [
+      "Ich bin Markus Öffel und baue FinTech-Produkte an der Schnittstelle von Payments, Risk/Fraud und AI.",
+      "Mein Fokus liegt auf klarer Architektur, nachvollziehbaren Entscheidungen und messbaren Outcomes statt reiner Feature-Menge.",
+      "Mit MSc-Finance-Hintergrund und Engineering-Praxis liefere ich Lösungen, die in regulierten Umgebungen belastbar bleiben.",
+    ],
+    aboutHighlights: [
+      "MSc Finance + Statistik: quantitative Modelle mit Business-Relevanz.",
+      "AI Engineering mit RAG-Fokus: nachvollziehbare Antworten statt Black-Box-Ausgaben.",
+      "Produkt- und Delivery-Blick: von der Idee bis zum verlässlichen Betrieb.",
+    ],
+    askTitle: "You can ask anything about me.",
+    askSubtitle:
+      "Der Ask-Bereich nutzt RAG: Antworten werden aus Website-Inhalten abgeleitet und mit Quellen belegt.",
+    askExamplePrompts: [
+      "Woran hast du in Fraud/Risk konkret gearbeitet?",
+      "Welche Skills bringst du für AI Engineering mit?",
+      "Welche Thesis-Ergebnisse sind für Unternehmen relevant?",
+    ],
+    ragTitle: "RAG in 3 Schritten",
+    ragSteps: [
+      "Frage analysieren und relevante Content-Abschnitte abrufen.",
+      "Antwort aus belegten Quellen zusammenstellen.",
+      "Ergebnis mit Citations und sinnvollen Next Steps ausgeben.",
+    ],
+    focusTitle: "Core Focus",
+    focusAreas: [
+      {
+        title: "Tech Engineering",
+        note: "Next.js, TypeScript, APIs, observability, deployment quality.",
+      },
+      {
+        title: "Quant & Risk",
+        note: "Zeitreihen, Volatilität, Backtesting, decision-ready metrics.",
+      },
+      {
+        title: "AI Engineering",
+        note: "RAG pipelines, citation-first answers, pragmatic LLM integration.",
+      },
+      {
+        title: "Innovation Delivery",
+        note: "Vom Konzept zur produktiven Lösung mit messbarem Impact.",
+      },
+    ],
   },
   en: {
     headline: "FinTech builder. Trust-first. Subtly bold.",
@@ -42,7 +104,53 @@ export const LANDING_COPY: Record<
       "AI only with reliable sources and cost controls",
       "CFA Level I candidate — exam planned for August 2026",
     ],
-    askSignalLine: "Answers with citations, not hallucinations.",
+    aboutEyebrow: "About me",
+    aboutTitle: "Markus Öffel — Tech × Quant × AI Engineering.",
+    aboutSubtitle:
+      "I build reliable systems for fintech, risk decisions, and production-grade AI use cases.",
+    aboutParagraphs: [
+      "I’m Markus Öffel, building fintech products at the intersection of payments, risk/fraud, and AI.",
+      "My focus is clear architecture, auditable decisions, and measurable outcomes instead of raw feature volume.",
+      "With an MSc finance background and hands-on engineering practice, I ship solutions that hold up in regulated environments.",
+    ],
+    aboutHighlights: [
+      "MSc finance and statistics foundation for quantitatively sound decisions.",
+      "AI engineering with a RAG-first approach: grounded answers over black-box output.",
+      "Product and delivery mindset: from concept to reliable operations.",
+    ],
+    askTitle: "You can ask anything about me.",
+    askSubtitle:
+      "The Ask section runs on RAG: answers are grounded in site content and returned with citations.",
+    askExamplePrompts: [
+      "What did you build in risk/fraud projects?",
+      "Which skills are most relevant for AI engineering?",
+      "Which thesis findings are useful for business decisions?",
+    ],
+    ragTitle: "RAG in 3 steps",
+    ragSteps: [
+      "Analyze the question and retrieve relevant content chunks.",
+      "Compose the answer from evidence-backed sources.",
+      "Return output with citations and actionable next steps.",
+    ],
+    focusTitle: "Core Focus",
+    focusAreas: [
+      {
+        title: "Tech Engineering",
+        note: "Next.js, TypeScript, APIs, observability, deployment quality.",
+      },
+      {
+        title: "Quant & Risk",
+        note: "Time series, volatility, backtesting, decision-ready metrics.",
+      },
+      {
+        title: "AI Engineering",
+        note: "RAG pipelines, citation-first answers, pragmatic LLM integration.",
+      },
+      {
+        title: "Innovation Delivery",
+        note: "From concept to production with measurable impact.",
+      },
+    ],
   },
 };
 
@@ -258,4 +366,3 @@ export const LEGAL_COPY = {
     ] as const satisfies readonly LegalSection[],
   },
 } as const;
-

@@ -379,6 +379,21 @@ function staticSiteCopyChunks(lang: "de" | "en"): RagChunkInput[] {
     landing.sub,
     "",
     ...landing.trustPoints,
+    "",
+    landing.aboutSubtitle,
+    landing.aboutTitle,
+    ...landing.aboutParagraphs,
+    ...landing.aboutHighlights,
+    "",
+    landing.askTitle,
+    landing.askSubtitle,
+    ...landing.askExamplePrompts,
+    "",
+    landing.ragTitle,
+    ...landing.ragSteps,
+    "",
+    landing.focusTitle,
+    ...landing.focusAreas.map((a) => `${a.title}: ${a.note}`),
   ].join("\n");
   {
     chunks.push(

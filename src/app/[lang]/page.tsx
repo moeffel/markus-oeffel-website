@@ -76,25 +76,12 @@ export default async function LandingPage({
       <section className="cyber-grid surface-card relative overflow-hidden rounded-3xl px-6 py-8 sm:px-10 sm:py-10">
         <div className="pointer-events-none absolute -right-28 -top-28 h-72 w-72 rounded-full bg-[radial-gradient(circle_at_center,rgba(93,217,255,0.22),transparent_70%)]" />
         <div className="pointer-events-none absolute -bottom-36 -left-36 h-80 w-80 rounded-full bg-[radial-gradient(circle_at_center,rgba(226,107,255,0.18),transparent_68%)]" />
-        <div className="relative grid gap-8 lg:grid-cols-[1.35fr_1fr] lg:items-center">
+        <div className="relative grid gap-8 lg:grid-cols-[1.35fr_1fr] lg:items-start">
           <div>
             <p className="inline-flex items-center gap-2 rounded-full border border-[var(--finance-gold)]/45 bg-[rgba(216,178,107,0.09)] px-3 py-1 text-[11px] font-semibold tracking-[0.18em] text-[var(--finance-gold)] uppercase">
               <span className="h-1.5 w-1.5 rounded-full bg-[var(--finance-gold)] pulse-line" />
               Finance-class × AI delivery
             </p>
-            <div className="mt-5 flex items-center gap-3">
-              <ProfilePhoto alt="Markus Öffel" size={56} priority />
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-foreground">
-                  Markus Öffel
-                </p>
-                <p className="truncate text-xs text-foreground/70">
-                  {lang === "de"
-                    ? "FinTech Builder · Risk · AI"
-                    : "FinTech builder · Risk · AI"}
-                </p>
-              </div>
-            </div>
             <h1 className="mt-4 text-balance text-4xl font-semibold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
               {c.headline}
             </h1>
@@ -147,53 +134,65 @@ export default async function LandingPage({
             </div>
           </div>
 
-          <div className="surface-card rounded-3xl p-5 sm:p-6">
+          <aside className="surface-card rounded-3xl p-5 sm:p-6">
             <p className="font-mono text-[11px] tracking-[0.15em] text-[var(--accent-cyan)] uppercase">
-              Live Signal
+              {c.focusTitle}
             </p>
-            <div className="mt-4 rounded-2xl border border-[var(--line)] bg-[rgba(3,9,17,0.65)] p-4">
-              <svg
-                viewBox="0 0 340 120"
-                className="h-24 w-full text-[var(--accent-cyan)]"
-                aria-hidden="true"
-              >
-                <defs>
-                  <linearGradient id="sparkGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="var(--accent-cyan)" />
-                    <stop offset="50%" stopColor="var(--accent-magenta)" />
-                    <stop offset="100%" stopColor="var(--accent-emerald)" />
-                  </linearGradient>
-                </defs>
-                <path
-                  d="M0 98 L28 90 L54 84 L78 74 L102 79 L126 67 L152 62 L176 56 L202 49 L224 54 L250 41 L274 36 L298 24 L320 28 L340 14"
-                  fill="none"
-                  stroke="url(#sparkGradient)"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  className="sparkline-glow pulse-line"
-                />
-              </svg>
-              <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
-                {kpis.slice(0, 3).map((tile) => (
-                  <div
-                    key={tile.kpi}
-                    className="rounded-xl border border-white/10 bg-white/5 px-2 py-2 text-center"
-                  >
-                    <p className="truncate text-[10px] uppercase tracking-widest text-foreground/55">
-                      {tile.kpi}
-                    </p>
-                    <p className="mt-1 text-sm font-semibold text-foreground">{tile.v}</p>
-                  </div>
-                ))}
-              </div>
+            <div className="mt-4 grid gap-3">
+              {c.focusAreas.slice(0, 3).map((area) => (
+                <div
+                  key={area.title}
+                  className="rounded-2xl border border-white/10 bg-[rgba(3,9,17,0.62)] p-3"
+                >
+                  <p className="text-sm font-semibold text-foreground">{area.title}</p>
+                  <p className="mt-1 text-xs text-foreground/70">{area.note}</p>
+                </div>
+              ))}
             </div>
+            <div className="mt-4 grid grid-cols-3 gap-2 text-xs">
+              {kpis.slice(0, 3).map((tile) => (
+                <div
+                  key={tile.kpi}
+                  className="rounded-xl border border-white/10 bg-white/5 px-2 py-2 text-center"
+                >
+                  <p className="truncate text-[10px] uppercase tracking-widest text-foreground/55">
+                    {tile.kpi}
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-foreground">{tile.v}</p>
+                </div>
+              ))}
+            </div>
+          </aside>
+        </div>
+      </section>
 
-            <div className="mt-4 rounded-2xl border border-white/10 bg-[rgba(9,17,29,0.72)] p-4 font-mono text-xs text-foreground/80">
-              <p className="text-[var(--accent-emerald)]">$ ask --topic trust --domain fintech</p>
-              <p className="mt-2 text-foreground/70">
-                {c.askSignalLine}
-              </p>
+      <section className="surface-card cyber-grid relative overflow-hidden rounded-3xl p-6 sm:p-8">
+        <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-[radial-gradient(circle_at_center,rgba(226,107,255,0.17),transparent_70%)]" />
+        <div className="relative grid gap-8 lg:grid-cols-[320px_1fr] lg:items-center">
+          <div className="mx-auto">
+            <ProfilePhoto alt="Markus Öffel portrait" size={280} className="finance-ring" />
+          </div>
+          <div>
+            <p className="text-xs font-medium tracking-[0.14em] text-foreground/55 uppercase">
+              {c.aboutEyebrow}
+            </p>
+            <h2 className="mt-2 text-balance text-2xl font-semibold tracking-tight sm:text-3xl">
+              {c.aboutTitle}
+            </h2>
+            <p className="mt-3 text-sm text-foreground/72 sm:text-base">{c.aboutSubtitle}</p>
+            <div className="mt-4 space-y-3 text-sm text-foreground/78 sm:text-base">
+              {c.aboutParagraphs.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
             </div>
+            <ul className="mt-5 grid gap-2 text-sm text-foreground/84">
+              {c.aboutHighlights.map((point) => (
+                <li key={point} className="flex items-start gap-3">
+                  <span className="mt-1.5 inline-block h-2 w-2 rounded-full bg-[var(--accent-cyan)] shadow-[0_0_10px_rgba(93,217,255,0.45)]" />
+                  <span>{point}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </section>
@@ -202,42 +201,67 @@ export default async function LandingPage({
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-medium tracking-[0.14em] text-foreground/55 uppercase">
-              {lang === "de" ? "Ask" : "Ask"}
+              Ask + RAG
             </p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-              {lang === "de" ? "Frag mein Portfolio" : "Ask my portfolio"}
-            </h2>
-            <p className="mt-2 max-w-2xl text-sm text-foreground/70">
-              {lang === "de"
-                ? "Streaming-Antworten mit Markdown + Citations."
-                : "Streaming answers with Markdown + citations."}
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight">{c.askTitle}</h2>
+            <p className="mt-2 max-w-3xl text-sm text-foreground/70 sm:text-base">
+              {c.askSubtitle}
             </p>
           </div>
           <Link
             href={`/${lang}/ask`}
             className="inline-flex h-10 items-center justify-center rounded-full border border-white/15 bg-white/5 px-4 text-xs font-medium text-foreground/85 transition hover:border-[var(--accent-cyan)]/45 hover:text-[var(--accent-cyan)]"
           >
-            {lang === "de" ? "Groß öffnen" : "Open full"}
+            {lang === "de" ? "Ask fullscreen" : "Open full Ask"}
           </Link>
         </div>
-        <div className="mt-5">
-          <AskClient lang={lang} variant="embed" />
+
+        <div className="mt-6 grid gap-6 lg:grid-cols-[1.5fr_1fr]">
+          <div className="rounded-2xl border border-white/10 bg-[rgba(5,12,22,0.6)] p-4">
+            <AskClient lang={lang} variant="embed" />
+          </div>
+          <aside className="rounded-2xl border border-white/10 bg-[rgba(5,12,22,0.6)] p-4">
+            <p className="text-xs font-medium tracking-[0.14em] text-foreground/55 uppercase">
+              {lang === "de" ? "Prompt-Ideen" : "Prompt ideas"}
+            </p>
+            <div className="mt-3 space-y-2">
+              {c.askExamplePrompts.map((prompt) => (
+                <div
+                  key={prompt}
+                  className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-foreground/80"
+                >
+                  {prompt}
+                </div>
+              ))}
+            </div>
+          </aside>
+        </div>
+
+        <div className="mt-6 rounded-2xl border border-white/10 bg-[rgba(8,16,28,0.6)] p-5">
+          <p className="text-xs font-medium tracking-[0.14em] text-foreground/55 uppercase">
+            {c.ragTitle}
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            {c.ragSteps.map((step, index) => (
+              <div
+                key={step}
+                className="rounded-xl border border-white/10 bg-[rgba(255,255,255,0.03)] p-3"
+              >
+                <p className="text-[11px] font-semibold tracking-[0.12em] text-[var(--accent-cyan)] uppercase">
+                  Step {index + 1}
+                </p>
+                <p className="mt-2 text-xs text-foreground/80">{step}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-3">
-        {kpis.map((tile) => (
-          <div
-            key={tile.kpi}
-            className="surface-card rounded-2xl p-6"
-          >
-            <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-foreground/60">
-              {tile.kpi}
-            </p>
-            <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
-              {tile.v}
-            </p>
-            <div className="mt-4 h-1 w-14 rounded-full bg-gradient-to-r from-[var(--accent-cyan)] to-[var(--accent-magenta)]" />
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {c.focusAreas.map((area) => (
+          <div key={area.title} className="surface-card rounded-2xl p-5">
+            <p className="text-sm font-semibold text-foreground">{area.title}</p>
+            <p className="mt-2 text-sm text-foreground/70">{area.note}</p>
           </div>
         ))}
       </section>

@@ -5,6 +5,8 @@ type ProfilePhotoProps = {
   className?: string;
 };
 
+export const PROFILE_PHOTO_SRC = "/profile.png";
+
 function normalizePhotoSrc(input: string): string {
   if (input.startsWith("http://") || input.startsWith("https://")) return input;
   if (input.startsWith("/")) return input;
@@ -17,9 +19,7 @@ export function ProfilePhoto({
   priority,
   className,
 }: ProfilePhotoProps) {
-  const src = normalizePhotoSrc(
-    process.env.NEXT_PUBLIC_PROFILE_PHOTO ?? "/profile-placeholder.svg",
-  );
+  const src = normalizePhotoSrc(PROFILE_PHOTO_SRC);
 
   return (
     <div

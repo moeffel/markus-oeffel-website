@@ -8,6 +8,17 @@ Stand: 2026-02-11
 - Spezifikation in `fintech-wow-portfolio-spec/SPEC/*` ist weiterhin mit `Status: Draft` markiert.
 - Git-Repository ist initialisiert, aber ohne Commit-Historie (alles aktuell uncommitted).
 
+## Fix-Loop (2026-02-12) – Profilbild
+
+- Problemursache: Profilbild war an eine optionale Env-Variable gebunden; bei fehlerhafter/alter Konfiguration konnte das Bild auf Production fehlen.
+- Fix umgesetzt:
+  - Profilbildquelle auf statische, repo-versionierte Datei umgestellt (`public/profile.png`).
+  - `ProfilePhoto` nutzt jetzt konstant `PROFILE_PHOTO_SRC = "/profile.png"` statt Runtime-Env.
+  - Landing-JSON-LD referenziert dieselbe stabile Bildquelle.
+- Doku aktualisiert:
+  - `.env.example` (Profile-Photo-Variable entfernt)
+  - `README.md` (Profilbildpfad klar auf `public/profile.png` gesetzt)
+
 ## Neuer Ausbau-Loop (2026-02-12)
 
 - Landingpage inhaltlich und visuell weiter in Richtung „About me + Ask/RAG“ ausgebaut.

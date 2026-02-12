@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { ProfilePhoto } from "@/components/profile-photo";
+import { ProfilePhoto, PROFILE_PHOTO_SRC } from "@/components/profile-photo";
 import { JsonLd } from "@/components/json-ld";
 import { AskClient } from "@/app/[lang]/ask/ask-client";
 import { getSiteSettings } from "@/lib/content";
@@ -32,7 +32,7 @@ export default async function LandingPage({
   const c = LANDING_COPY[lang];
   const settings = await getSiteSettings();
   const siteUrl = getSiteUrl();
-  const profilePhotoSrc = process.env.NEXT_PUBLIC_PROFILE_PHOTO ?? "/profile-placeholder.svg";
+  const profilePhotoSrc = PROFILE_PHOTO_SRC;
   const profilePhotoUrl =
     profilePhotoSrc.startsWith("http://") || profilePhotoSrc.startsWith("https://")
       ? profilePhotoSrc

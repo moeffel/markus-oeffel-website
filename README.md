@@ -27,7 +27,7 @@ cp .env.example .env.local
 Notes:
 - The site runs without most env vars (falls back to local placeholder content and disables captcha verification in dev).
 - For production/staging you should set all required env vars.
-- For the landing-page profile photo, put an image into `public/` (e.g. `public/profile.jpg`) and set `NEXT_PUBLIC_PROFILE_PHOTO=/profile.jpg`.
+- Landing-page profile photo is loaded from `public/profile.png`.
 
 3. Run dev server:
 

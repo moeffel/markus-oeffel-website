@@ -1,0 +1,23 @@
+Master's Thesis – Executive Brief
+
+Title
+Evaluating the ARIMA-GARCH Model's Accuracy Across Diverse Cryptocurrencies
+(BTC, ETH, DOGE, SOL)
+
+Scope
+- Daily data from 2020-05-11 to 2024-04-20
+- Consistent ARIMA + GARCH-family framework across 4 assets
+- Out-of-sample forecasts for horizons 1/3/7/14/30 and rolling backtests
+
+Method
+- Train/validation/test split (70/15/15)
+- Auto-tuning via AIC + parameter significance
+- Benchmarks: naive returns and EWMA volatility
+- Tests: Diebold-Mariano, Kupiec, Christoffersen
+
+Key findings
+- No consistent one-step return edge versus naive benchmark
+- Significant medium-horizon signals for selected assets (notably SOL)
+- Strong practical utility for volatility and 5% VaR risk estimation
+
+Public summary generated from thesis manuscript and implementation script.

@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+
+      - name: Start server
+        run: |
+          npm run start -- --port 3000 &
+          echo $! > .server.pid
+          for i in $(seq 1 90); do
+            if curl -fsS http://localhost:3000/en >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Server did not start in time"
+          exit 1
+
+      - name: Header audit (CSP)
+        run: EXPECT_CSP=1 node scripts/audit-headers.mjs http://localhost:3000
+
+      - name: Smoke routes (J1-J4)
+        run: node scripts/smoke-routes.mjs http://localhost:3000
+
+      - name: Smoke APIs
+        run: node scripts/smoke-api.mjs http://localhost:3000
+
+      - name: Stop server
+        if: always()
+        run: |
+          if [ -f .server.pid ]; then
+            kill "$(cat .server.pid)" || true
+          fi

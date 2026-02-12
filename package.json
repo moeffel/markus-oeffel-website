@@ -1,0 +1,43 @@
+{
+  "name": "fintech-wow-portfolio",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --webpack --disable-source-maps",
+    "dev:turbo": "next dev --turbo --disable-source-maps",
+    "build": "next build --webpack",
+    "start": "next start",
+    "lint": "eslint --max-warnings=0 src middleware.ts next.config.js",
+    "typecheck": "node node_modules/typescript/bin/tsc -p tsconfig.no-plugin.json --noEmit --pretty false",
+    "audit:headers": "node scripts/audit-headers.mjs",
+    "smoke:routes": "node scripts/smoke-routes.mjs",
+    "smoke:api": "node scripts/smoke-api.mjs",
+    "smoke": "npm run smoke:routes && npm run smoke:api",
+    "deploy:check": "node scripts/deploy-readiness.mjs",
+    "deploy:check:public": "node scripts/deploy-readiness.mjs public"
+  },
+  "dependencies": {
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.36.2",
+    "next": "16.1.6",
+    "pdf-parse": "^2.4.5",
+    "pg": "^8.18.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "resend": "^6.9.1",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/pg": "^8.16.0",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9.39.2",
+    "eslint-config-next": "16.1.6",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "typescript-eslint": "^8.54.0"
+  }
+}

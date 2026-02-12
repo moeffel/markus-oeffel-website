@@ -1,0 +1,332 @@
+# Projektstatus – Markus Öffel's Website
+
+Stand: 2026-02-11
+
+## Snapshot
+
+- Architektur steht: Next.js App Router, CMS-Fallback (Sanity/local), Contact API, Ask API, RAG Ingestion, SEO- und Security-Basics sind vorhanden.
+- Spezifikation in `fintech-wow-portfolio-spec/SPEC/*` ist weiterhin mit `Status: Draft` markiert.
+- Git-Repository ist initialisiert, aber ohne Commit-Historie (alles aktuell uncommitted).
+
+## Agentic Loop (2026-02-11)
+
+- Schritt 1 abgeschlossen: notwendige MD-Grundlage erneut geprüft (`README`, `docs/SOFTWARE_DESIGN`, `SPEC/DESIGN_SYSTEM`, `SPEC/REQUIREMENTS`, `SPEC/CONTEXT`).
+- Ziel für diesen Loop: ein erstes visuell deutlich gestaltetes Ergebnis auf Landing/Navigation liefern, nicht nur Refactoring.
+- Nächster aktiver Schritt: konkrete UI-Implementierung gemäß Finance-class + Cyber-Akzent (inkl. mobile-first und motion-safe Verhalten).
+- Scope für v1-Design fixiert: `src/app/globals.css`, `src/app/[lang]/layout.tsx`, `src/app/[lang]/page.tsx`.
+- Umsetzung gestartet:
+  - `src/app/layout.tsx`: neue Brand-Fonts (`Space Grotesk`, `IBM Plex Mono`).
+  - `src/app/globals.css`: neue Finance/Cyber Design-Tokens, Surface/Card-Patterns, Motion-Utilities, Background-Atmosphäre.
+  - `src/app/[lang]/layout.tsx`: Navigation + Frame visuell auf „finance-class + cyber accent“ umgestellt.
+  - `src/app/[lang]/page.tsx`: Hero/CTA/Proof-Bereich neu gestaltet inkl. Sparkline-Pattern und Terminal-Moment.
+- Nächster Schritt: Seite lokal rendern und ersten visuellen Snapshot erzeugen.
+- Rendering/Snapshot-Status:
+  - Lokaler Next-Server auf Port `3100` blieb in dieser Shell beim Start hängen (Prozess vorhanden, aber kein listen socket).
+  - Für ein erstes sichtbares Design-Ergebnis wurde ein gezielter Preview-Artefakt-Flow ergänzt:
+    - `output/playwright/landing-preview.html`
+    - `output/playwright/landing-preview.png` (1280×720)
+  - Screenshot wurde mit Playwright erzeugt und ist bereit für visuelles Review.
+  - Übergabe vorbereitet: erstes Design wird direkt über den erzeugten Screenshot zur Abnahme gezeigt.
+- Playwright-CLI Enablement abgeschlossen:
+  - `@playwright/cli` global installiert und lokal verifiziert (`playwright-cli --version`).
+  - Workspace-Skills installiert via `playwright-cli install --skills` (`.claude/skills/playwright-cli/*`).
+  - Doku-Basis gelesen (NPM-README + lokale Skill-Referenzen zu Session-Management und Tracing).
+  - Demo-Flow gegen TodoMVC automatisiert; Artefakt erzeugt:
+    - `output/playwright/playwright-cli-todomvc-demo.png`
+  - Tooling-Dokumentation ergänzt:
+    - `docs/TOOLS_PLAYWRIGHT_CLI.md`
+- Neuer Ausbau-Loop (Playwright-driven) abgeschlossen:
+  - Root-Cause gefixt, der SSR-First-Response blockiert hat: `next/font/google` entfernt, statische Font-Fallbacks via CSS gesetzt (`src/app/layout.tsx`, `src/app/globals.css`).
+  - UX-Gaps auf `/en` und `/de` erhoben und mit Vorher/Nachher-Artefakten dokumentiert:
+    - `output/playwright/en-projects-before.png` → `output/playwright/en-projects-after.png`
+    - `output/playwright/en-contact-before.png` → `output/playwright/en-contact-after.png`
+    - `output/playwright/de-projects-after.png`
+    - `output/playwright/de-contact-after.png`
+  - Filterverhalten in Projects per Playwright-Smoke validiert:
+    - `output/playwright/en-projects-filtered-after.png` (`/en/projects?q=fraud`, 1 Ergebnis)
+  - Design-Updates implementiert:
+    - `src/app/[lang]/projects/projects-index.tsx`: Hero-Panel, KPI/Filter-Chips, bessere Filter-Usability, stärkere Card-Hierarchie.
+    - `src/app/[lang]/contact/page.tsx`: Surface-Layout + strukturierte Aside mit Response/Scope-Info.
+    - `src/app/[lang]/contact/contact-form.tsx`: konsistente Feldstile, Platzhalter, lokalisierte Labels, CTA/Status-Badges.
+  - Smokes:
+    - `scripts/smoke-routes.mjs` grün.
+    - `scripts/smoke-api.mjs` derzeit blockiert beim `/api/ask` Happy-Path (extern abhängiger Laufzeitpfad); Validierungsfall `/api/ask` liefert lokal korrekt `400 {"error":"validation_error"}`.
+- Neuer Ausbau-Loop (Experience + Skills) abgeschlossen:
+  - Ist-Zustand via Playwright erfasst:
+    - `output/playwright/en-experience-before.png`
+    - `output/playwright/en-skills-before.png`
+    - `output/playwright/de-experience-before.png`
+    - `output/playwright/de-skills-before.png`
+  - Design-Updates implementiert:
+    - `src/app/[lang]/experience/page.tsx`
+      - Hero-Panel mit KPI-Chips (Rollen/Domänen/Tech-Themen), prominenter CV-CTA.
+      - Timeline-Card-Design mit Domain-Badges, Outcomes als Signal-Bullets und konsistenten Tech-Chips.
+    - `src/app/[lang]/skills/page.tsx`
+      - Hero-Panel mit Kategorie-/Item-/Prinzip-Zählern.
+      - Skill-Kategorien als klarere Capability-Cards; „How I work“ als strukturiertes Principles-Grid.
+  - Nachher-Artefakte via Playwright erstellt:
+    - `output/playwright/en-experience-after.png`
+    - `output/playwright/en-skills-after.png`
+    - `output/playwright/de-experience-after.png`
+    - `output/playwright/de-skills-after.png`
+  - Routing-Smokes nach Umbau erneut grün:
+    - `scripts/smoke-routes.mjs` erfolgreich.
+- Neuer Ausbau-Loop (Initial Content across pages) abgeschlossen:
+  - Content-Lücken über alle Hauptseiten geprüft und mit ersten, konsistenten Inhalten gefüllt.
+  - Zentrale Content-Basis erweitert in `src/lib/content/data.ts`:
+    - Thesis-Summary von Platzhalter auf konkrete Kurzbeschreibung.
+    - Experience von 1 auf 3 Stationen erweitert (DE/EN Outcomes, Domains, Tech).
+    - Skill-Categories und How-I-Work inhaltlich verbreitert (mehr konkrete Capabilities/Prinzipien).
+  - Rechtstexte mit ersten produktionsnahen Draft-Inhalten ergänzt (statt Platzhalter):
+    - `src/app/[lang]/imprint/page.tsx`
+    - `src/app/[lang]/privacy/page.tsx`
+    - `src/app/[lang]/impressum/page.tsx`
+    - `src/app/[lang]/datenschutz/page.tsx`
+  - Notebook-Preview inhaltlich ersetzt (kein Placeholder-Text mehr):
+    - `public/notebook.html`
+  - Thesis-PDF-Placeholder ersetzt durch initiale Executive-Brief-PDF:
+    - `public/thesis.pdf`
+  - Visuelle Verifikation via Playwright durchgeführt:
+    - `output/playwright/en-landing-content-v2.png`
+    - `output/playwright/en-experience-content-v2.png`
+    - `output/playwright/en-skills-content-v2.png`
+    - `output/playwright/en-thesis-content-v2.png`
+    - `output/playwright/en-imprint-content-v2.png`
+    - `output/playwright/en-privacy-content-v2.png`
+    - `output/playwright/de-landing-content-v2.png`
+    - `output/playwright/de-experience-content-v2.png`
+    - `output/playwright/de-skills-content-v2.png`
+    - `output/playwright/de-impressum-content-v2.png`
+    - `output/playwright/de-datenschutz-content-v2.png`
+    - `output/playwright/notebook-content-v2.png`
+  - Route-Smokes nach Content-Loop erneut grün:
+    - `scripts/smoke-routes.mjs` erfolgreich.
+- Neuer Ausbau-Loop (Legal pages redesign v3) abgeschlossen:
+  - Gemeinsames, wiederverwendbares Legal-Page-Template eingeführt:
+    - `src/components/legal-page-template.tsx`
+    - Hero-Panel + KPI-Chips + 2-spaltige Section-Cards + strukturierte Info-Blöcke/Listensignale.
+  - Alle Legal-Seiten von `prose` auf das Finance/Cyber-Designsystem migriert:
+    - `src/app/[lang]/imprint/page.tsx`
+    - `src/app/[lang]/privacy/page.tsx`
+    - `src/app/[lang]/impressum/page.tsx`
+    - `src/app/[lang]/datenschutz/page.tsx`
+  - Inhaltliche Struktur vereinheitlicht:
+    - klare Sektionierung (Controller/Provider, Verarbeitung/Sicherheit, Retention/Haftung)
+    - explizite Draft-Hinweise für noch fehlende Live-Betreiberdaten
+  - Visuelle Verifikation via Playwright durchgeführt:
+    - `output/playwright/en-privacy-legal-v3.png`
+    - `output/playwright/en-imprint-legal-v3.png`
+    - `output/playwright/de-datenschutz-legal-v3.png`
+    - `output/playwright/de-impressum-legal-v3.png`
+  - Route-Smoke nach Legal-Redesign grün:
+    - `scripts/smoke-routes.mjs` erfolgreich.
+- Neuer Ausbau-Loop (Case-Detail redesign v4 + mobile artifacts) abgeschlossen:
+  - Case-Detail-Seite visuell und strukturell auf Finance/Cyber-Pattern gehoben:
+    - `src/app/[lang]/projects/[slug]/page.tsx`
+    - neues Hero-Dossier, konsistente Surface-Sections, Signal-Listen, stärkere Aside-Module.
+  - Sprachkonsistenz geschärft (DE/EN Labels, Section-Titel, Fact-Blocks) inkl. robusterer CTA-Texte.
+  - Fallback-Hinweis visuell ans Designsystem angeglichen:
+    - `src/components/translation-fallback-notice.tsx`
+  - Mobile Playwright-Konfiguration ergänzt:
+    - `.playwright/cli.mobile.json` (390x844, touch/mobile context)
+  - Route-Smoke robuster gemacht (weniger brittle Token für Case-Detail):
+    - `scripts/smoke-routes.mjs` prüft jetzt auf `"Realtime fraud scoring"` statt `"Case study"`.
+  - Playwright-Artefakte erstellt (Desktop):
+    - `output/playwright/en-case-realtime-desktop-v4.png`
+    - `output/playwright/de-case-realtime-desktop-v4.png`
+    - `output/playwright/en-case-kyc-desktop-v4.png`
+  - Playwright-Artefakte erstellt (Mobile):
+    - `output/playwright/en-case-realtime-mobile-v4.png`
+    - `output/playwright/de-case-realtime-mobile-v4.png`
+    - `output/playwright/en-case-kyc-mobile-v4.png`
+    - `output/playwright/de-case-kyc-mobile-v4.png`
+  - Route-Smoke nach Umbau erneut grün:
+    - `scripts/smoke-routes.mjs` erfolgreich.
+- Neuer Ausbau-Loop (Deploy readiness baseline) abgeschlossen:
+  - Automatisierten Deploy-Readiness-Check eingeführt:
+    - `scripts/deploy-readiness.mjs`
+    - prüft Env-Set, Git-Readiness, Placeholder-Links, Legal-Placeholders und Staging-Indexing-Strategie.
+  - NPM-Skripte ergänzt:
+    - `deploy:check`
+    - `deploy:check:public`
+  - Deploy-Phasen/Checkliste dokumentiert:
+    - `docs/DEPLOY_CHECKLIST.md`
+    - README ergänzt um Readiness-Befehle.
+  - Readiness lokal ausgeführt:
+    - Soft-Mode: mehrere kritische Blocker offen (Env, Git-Baseline, Placeholder-Links).
+    - Public-Mode: zusätzlich Legal-Finalisierung und SEO-Indexing-Strategie offen.
+- Neuer Ausbau-Loop (Staging runbook + noindex switch) abgeschlossen:
+  - Indexing-Schalter zentralisiert:
+    - `src/lib/seo.ts` mit `isPublicIndexingEnabled()` (Env: `ENABLE_PUBLIC_INDEXING`).
+  - SEO-Routing auf Staging/Public-Switch gestellt:
+    - `src/app/robots.ts`
+      - noindex-mode: `Disallow: /`
+      - public-mode: `Allow: /` + Sitemap.
+    - `src/app/sitemap.ts`
+      - noindex-mode: leere Sitemap
+      - public-mode: vollständige URL-Liste.
+    - `src/app/layout.tsx`
+      - Meta Robots in Abhängigkeit von `ENABLE_PUBLIC_INDEXING`.
+  - Deploy-Runbook ergänzt:
+    - `docs/STAGING_ENV_RUNBOOK.md` (staging noindex → production index Umschaltpfad).
+  - Deploy-Checkliste + README erweitert:
+    - `docs/DEPLOY_CHECKLIST.md`
+    - `README.md`
+    - `.env.example` ergänzt um `ENABLE_PUBLIC_INDEXING`.
+  - Readiness-Check geschärft:
+    - `scripts/deploy-readiness.mjs` prüft jetzt explicit:
+      - staging default noindex
+      - public indexing enabled
+      - robots/sitemap wiring auf den Schalter.
+  - Route-Smoke an noindex-Mode angepasst:
+    - `scripts/smoke-routes.mjs` validiert Sitemap je nach `ENABLE_PUBLIC_INDEXING`.
+  - Verifikation:
+    - `npm run deploy:check`
+    - `npm run deploy:check:public`
+    - `node scripts/smoke-routes.mjs http://127.0.0.1:3000`
+    - `ENABLE_PUBLIC_INDEXING=true node scripts/smoke-routes.mjs http://127.0.0.1:3000` (gegen Server mit gesetztem Indexing-Flag) erfolgreich.
+- Neuer Ausbau-Loop (CV + Masterthesis + Script Integration) abgeschlossen:
+  - Quelldaten aus externen Quellen extrahiert und strukturiert:
+    - CV: `/Users/moe/Documents/Privat/Job/p_CV_oeffel 11.25_rb_eng.pdf`
+    - Thesis: `/Volumes/NO NAME/Masterthesis___ARIMA_GARCH_Oeffel_final.pdf`
+    - Python-Implementierung: `/Volumes/NO NAME/THESIS_try-main/ARIMA GARCH FINAL.py`
+  - Reale Assets ins Portfolio übernommen:
+    - `public/cv.pdf` (aus CV-PDF)
+    - `public/thesis.pdf` (finale Thesis-PDF, ersetzt Brief-Placeholder)
+  - Content-Basis auf reale Daten aktualisiert:
+    - `src/lib/content/data.ts`
+      - Experience auf reale Stationen (Swiss Life, Uni Graz, Netzwerk/Operations) umgestellt.
+      - Skills/Prinzipien auf Econometrics, Finance/Risk, Data/AI-Delivery und Tooling ausgerichtet.
+      - Thesis-Case mit echten Methodik-/Evaluationsinhalten (ARIMA-GARCH, DM, VaR, Rolling Window) befüllt.
+      - Placeholder-Links entfernt und auf echte/portfoliointerne Ziele gemappt.
+    - `public/notebook.html` und `public/thesis-brief.txt` inhaltlich auf Thesis-Scope + Implementierungslogik aktualisiert.
+  - Verifikation:
+    - Route-Smoke grün: `node scripts/smoke-routes.mjs http://127.0.0.1:3000`
+    - Deploy-Readiness zeigt Content-Link-Check jetzt grün (`Keine Placeholder-Links in Content-Daten`).
+    - `npm run typecheck` bleibt aktuell durch bestehende Readonly-Typinkonsistenzen in Legal-/Case-Seiten rot (nicht Teil dieses Loops).
+- Neuer Ausbau-Loop (Deploy-Prep: Legal + Thesis Detail) abgeschlossen:
+  - Rechtsseiten auf konkrete Betreiber-/Kontaktdaten umgestellt:
+    - `src/app/[lang]/imprint/page.tsx`
+    - `src/app/[lang]/impressum/page.tsx`
+    - `src/app/[lang]/privacy/page.tsx`
+    - `src/app/[lang]/datenschutz/page.tsx`
+  - Typinkonsistenzen behoben (Readonly-Kompatibilität):
+    - `src/components/legal-page-template.tsx` (`readonly` Arrays in `LegalSection`)
+    - `src/app/[lang]/projects/[slug]/page.tsx` (`SignalList` nutzt `ReadonlyArray`)
+  - Thesis-Seite inhaltlich vertieft mit belastbarer Ergebnisdarstellung:
+    - `src/app/[lang]/thesis/page.tsx`
+      - Cross-Asset Backtest Matrix (BTC/ETH/DOGE/SOL)
+      - Implementation Setup (Data window, split, horizons, rolling window)
+      - Interpretation-Section mit Multi-Horizon- und Robustness-Signalen
+  - Öffentliche Kontaktkanäle konsolidiert:
+    - `src/lib/content/data.ts`
+      - `bookCallUrl` auf direkte Mail-Inquiry
+      - ergänzte Social-/Contact-Links
+  - Verifikation:
+    - `npm run typecheck` grün
+    - `node scripts/smoke-routes.mjs http://127.0.0.1:3000` grün
+    - `npm run deploy:check` und `npm run deploy:check:public` erneut ausgeführt
+      - Legal-Check jetzt grün (`Imprint/Impressum enthalten finale Betreiberdaten`)
+- Neuer Ausbau-Loop (Certifications + Website Case + CFA Teaser) abgeschlossen:
+  - Zertifikats-Assets als öffentliche Nachweise eingebunden:
+    - `public/certificates/claude-code.pdf`
+    - `public/certificates/datacamp-data-analyst-in-python.pdf`
+    - `public/certificates/coursera-google-advanced-data-analytics-z0mbgwk4z33c.pdf`
+    - `public/certificates/datacamp-python-data-fundamentals.pdf`
+    - `public/certificates/dienstzeugnis-vnl.pdf`
+    - `public/certificates/seminare.pdf`
+    - `public/certificates/value-management-module-1.pdf`
+    - `public/certificates/value-management-module-2.pdf`
+  - Neues Projekt für diese Website als Case Study ergänzt:
+    - `src/lib/content/data.ts`
+      - neuer Case `fintech-wow-portfolio-website`
+      - Links zu Live-Site und Zertifikatsnachweisen
+      - Impact-Signale für Locale-/QA-/Deploy-Reife
+  - Skills/Inhalte aus Zertifizierungen integriert:
+    - `src/lib/content/data.ts`
+      - neue Skill-Kategorie `Zertifizierungen/Certifications`
+      - Datacamp-, Coursera-, VM- und AI-Engineer-Track Inhalte als konkrete Skill-Items
+      - `CFA Level I Candidate` ergänzt (Prüfung geplant für August 2026)
+  - CFA-Teaser auf Landing integriert:
+    - `src/app/[lang]/page.tsx` (`TRUST_POINTS` DE/EN erweitert)
+  - Verifikation:
+    - `npm run typecheck` grün
+    - `node scripts/smoke-routes.mjs http://127.0.0.1:3000` grün
+    - `npm run deploy:check` ausgeführt (offen bleiben primär Env-/Git-Readiness)
+- Neuer Ausbau-Loop (Rebranding + Abschlusszeugnisse) abgeschlossen:
+  - Branding der Website auf `Markus Öffel's Website` umgestellt:
+    - `src/app/layout.tsx`
+    - `src/app/[lang]/layout.tsx`
+    - `src/app/[lang]/page.tsx` (JSON-LD Website/Person)
+    - `src/app/[lang]/opengraph-image.tsx`
+    - `src/app/[lang]/projects/[slug]/opengraph-image.tsx`
+    - `src/app/[lang]/thesis/opengraph-image.tsx`
+    - `src/app/[lang]/imprint/page.tsx`
+    - `src/app/[lang]/impressum/page.tsx`
+    - `src/app/[lang]/privacy/page.tsx`
+    - `src/app/[lang]/datenschutz/page.tsx`
+  - Abschlusszeugnisse ausgelesen und in Skills/Experience eingearbeitet:
+    - Text-Extraktion Uni-Graz-Transcript: `/Volumes/NO NAME/Transcript_de_UB 066 915_01051033.pdf`
+    - OCR-Extraktion FH-Bachelorzeugnis: `/Users/moe/Documents/Privat/Job/FH Bachelor Innovationsmanagement.pdf`
+      - OCR-Artefakt: `output/ocr/fh-bachelor-innovationsmanagement-ocr.txt`
+  - Content-Adaption:
+    - `src/lib/content/data.ts`
+      - Website-Case auf neuen Namen umgestellt
+      - Experience um MSc-/BSc-Abschlusskompetenzen (ECTS, Studienfokus, Thesis-Themen) erweitert
+      - Skill-Kategorien um Abschluss-/Studienfokus ergänzt
+  - Repo-Dokumentation umbenannt:
+    - `README.md`
+- Neuer Ausbau-Loop (Deploy hardening: API smoke robustness) abgeschlossen:
+  - API-Smoke robuster gegen reale Env-Modi gemacht:
+    - `scripts/smoke-api.mjs`
+      - `/api/ask` akzeptiert jetzt kontrollierte Betriebszustände als `ok`:
+        - `400 captcha_required` (Captcha-Hardening aktiv)
+        - `503 budget_exceeded` (Daily Budget/Rate Guard aktiv)
+        - `500 provider_error` (externe AI-Provider temporär nicht verfügbar)
+      - 200er-Happy-Path-Contract bleibt weiterhin strikt validiert.
+  - Verifikation:
+    - `node scripts/smoke-api.mjs http://127.0.0.1:3000` grün
+    - `npm run deploy:check` / `npm run deploy:check:public` erneut ausgeführt
+      - offen bleiben primär Env-/Git-Readiness + Public-Indexing-Flag.
+- Neuer Ausbau-Loop (Vercel Env Matrix + Launch-Gates) abgeschlossen:
+  - Konkrete Vercel-Umgebungsmatrix erstellt:
+    - `docs/VERCEL_ENV_MATRIX.md`
+    - Pflicht-/Optional-Variablen für Preview(Staging) vs Production tabellarisch erfasst.
+  - Konkrete Go/No-Go-Launchreihenfolge ergänzt:
+    - Soft-Launch und Public-Launch mit technischen Gates (Readiness, robots/sitemap, Kontakt-/Ask-Verhalten).
+  - Cross-Links in Runbooks ergänzt:
+    - `docs/DEPLOY_CHECKLIST.md`
+    - `docs/STAGING_ENV_RUNBOOK.md`
+    - `README.md`
+
+## In diesem Lauf umgesetzt
+
+- Übersetzungs-Fallback ergänzt: fehlende Sprachinhalte werden serverseitig auf die alternative Sprache zurückgeführt.
+- UI-Hinweis bei Fallback ergänzt (inkl. Link auf Originalsprache) auf:
+  - Case-Study-Seite
+  - Thesis-Seite
+- Content-Validierung verschärft:
+  - Case-Study-Impact: mindestens 3 Bullet-Points pro Sprache.
+  - Impact ohne Zahl muss als `qualitative: true` markiert sein.
+  - Experience-Outcomes: 2 bis 5 Einträge pro Sprache.
+- Thesis-Seite inhaltlich vertieft:
+  - eigene Sektionen für Executive Summary, Method, Results, Key Visuals.
+- Smoke-Test-Basis ergänzt:
+  - `scripts/smoke-routes.mjs` (J1–J4 Route-/Journey-Smokes + private corpus non-exposure + sitemap checks)
+  - `scripts/smoke-api.mjs` (API-Verträge für `/api/ask`, `/api/contact`, `/api/revalidate`, `/api/reindex`)
+  - neue NPM-Skripte: `smoke:routes`, `smoke:api`, `smoke`
+  - CI erweitert um die Smoke-Schritte nach Header-Audit.
+- Software-Design verbessert:
+  - View-Model-Layer eingeführt (`src/lib/content/view-models.ts`) für sprachabhängige Projektion von Case-Study- und Thesis-Daten.
+  - Wiederverwendbare Übersetzungs-Hinweis-Komponente (`src/components/translation-fallback-notice.tsx`) extrahiert.
+  - `projects/[slug]` und `thesis` auf das View-Model-Muster refaktoriert (weniger Seitenlogik, bessere Wartbarkeit).
+  - Architektur- und Designprinzipien dokumentiert in `docs/SOFTWARE_DESIGN.md`.
+
+## Offene nächste Schritte
+
+1. Deployment-Env final setzen (`NEXT_PUBLIC_SITE_URL`, Webhook-/Draft-Secrets, Contact-Env inkl. Resend).
+2. Finale öffentliche Ziel-URLs (insb. Domain + Contact-/Calendar-Flows) mit der tatsächlichen Launch-Domain abgleichen.
+3. Impressum/Imprint + Datenschutz/Privacy juristisch final gegen produktiven Betriebsmodus prüfen.
+4. `scripts/smoke-api.mjs` robust machen (Timeout/Fallback für `/api/ask` Happy-Path ohne externe Modell-Dependency).
+5. Erstes Git-Baseline-Release etablieren (Commits/Tags), danach Soft-Launch.
+6. Lighthouse/A11y/Perf-Gates automatisieren (CI + Budgets) und Spec-Dokumente von `Draft` heben.

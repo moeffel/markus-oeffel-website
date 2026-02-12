@@ -349,7 +349,15 @@ const caseStudies = z.array(caseStudySchema).parse([
     stack: ["Python", "pandas", "statsmodels", "arch", "yfinance", "SciPy"],
     links: [
       { label: "Thesis PDF", url: "https://fintech-wow.dev/thesis.pdf" },
-      { label: "Notebook render", url: "https://fintech-wow.dev/notebook.html" },
+      { label: "Notebook walkthrough", url: "https://fintech-wow.dev/notebook.html" },
+      {
+        label: "Notebook source (full .ipynb)",
+        url: "https://fintech-wow.dev/notebooks/thesis-arima-garch-walkthrough.ipynb",
+      },
+      {
+        label: "Notebook source (interview .ipynb)",
+        url: "https://fintech-wow.dev/notebooks/thesis-arima-garch-interview.ipynb",
+      },
       {
         label: "Python implementation (on request)",
         url: "https://fintech-wow.dev/en/contact",

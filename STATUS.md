@@ -298,6 +298,29 @@ Stand: 2026-02-11
     - `docs/DEPLOY_CHECKLIST.md`
     - `docs/STAGING_ENV_RUNBOOK.md`
     - `README.md`
+- Neuer Ausbau-Loop (Masterthesis Notebook Walkthrough) abgeschlossen:
+  - Originalskript erneut analysiert:
+    - `/Volumes/NO NAME/THESIS_try-main/ARIMA GARCH FINAL.py` (v28.5)
+    - zentrale Methodik-Blöcke in ein didaktisches Notebook überführt (Data → Diagnostics → Modeling → Backtests → Interpretation).
+  - Neues umfassendes Jupyter Notebook erstellt:
+    - `public/notebooks/thesis-arima-garch-walkthrough.ipynb`
+    - 51 Zellen mit kleinen Theorie-/Code-Happen, inkl. ARIMA+GARCH Pipeline, Rolling Window, Multi-Horizon, DM-Tests und VaR-Backtests.
+  - Notebook-Webansicht erweitert:
+    - `public/notebook.html`
+    - Download-Link auf das `.ipynb` + strukturierte Kapitelübersicht.
+  - Thesis-Case-Links ergänzt:
+    - `src/lib/content/data.ts`
+    - zusätzlicher Link `Notebook source (.ipynb)`.
+- Neuer Ausbau-Loop (Masterthesis Interview Notebook) abgeschlossen:
+  - Kompakte Interview-Version als zweites Notebook ergänzt:
+    - `public/notebooks/thesis-arima-garch-interview.ipynb`
+    - 12 Zellen mit Storyline für 10–15 Minuten (Problem, Pipeline, Rolling-Backtest, VaR, Takeaways).
+  - Thesis-Linkset für beide Varianten erweitert:
+    - `src/lib/content/data.ts`
+    - Links auf `Notebook source (full .ipynb)` und `Notebook source (interview .ipynb)`.
+  - Notebook-Renderseite aktualisiert:
+    - `public/notebook.html`
+    - Download-CTA für Full + Interview-Version und kurzer Nutzungshinweis.
 
 ## In diesem Lauf umgesetzt
 

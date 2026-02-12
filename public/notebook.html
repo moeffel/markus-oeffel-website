@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>ARIMA-GARCH Thesis Notebook Render</title>
+    <title>Masterthesis Notebook Walkthrough</title>
     <style>
       body {
         font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
@@ -14,13 +14,17 @@
         color: #ededed;
       }
       .wrap {
-        max-width: 860px;
+        max-width: 920px;
         margin: 0 auto;
       }
       h1 {
         margin: 0 0 12px;
-        font-size: 28px;
+        font-size: 32px;
         letter-spacing: -0.02em;
+      }
+      h2 {
+        margin: 32px 0 8px;
+        font-size: 22px;
       }
       p {
         color: #bdbdbd;
@@ -31,7 +35,27 @@
         border-radius: 16px;
         border: 1px solid rgba(255, 255, 255, 0.12);
         background: rgba(255, 255, 255, 0.03);
-        margin: 14px 0;
+        margin: 12px 0;
+      }
+      .pill {
+        display: inline-block;
+        margin-right: 8px;
+        margin-top: 8px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(93, 217, 255, 0.35);
+        color: #8ce6ff;
+        font-size: 12px;
+      }
+      .btn {
+        display: inline-block;
+        margin-top: 16px;
+        margin-right: 10px;
+        padding: 10px 16px;
+        border-radius: 999px;
+        border: 1px solid rgba(216, 178, 107, 0.5);
+        color: #e6c78a;
+        text-decoration: none;
       }
       pre {
         padding: 16px;
@@ -47,56 +71,75 @@
   </head>
   <body>
     <div class="wrap">
-      <h1>ARIMA-GARCH Thesis Notebook Render</h1>
+      <h1>Masterthesis Walkthrough Notebook</h1>
       <p>
-        Static preview of the implementation behind the master thesis
-        <em>“Evaluating the ARIMA-GARCH Model’s Accuracy Across Diverse
-          Cryptocurrencies”</em> (BTC, ETH, DOGE, SOL).
+        Step-by-step companion for the thesis
+        <em>“Evaluating the ARIMA-GARCH Model’s Accuracy Across Diverse Cryptocurrencies”</em>
+        with small theory + code chunks.
+      </p>
+      <span class="pill">BTC</span>
+      <span class="pill">ETH</span>
+      <span class="pill">DOGE</span>
+      <span class="pill">SOL</span>
+      <span class="pill">2020-05-11 → 2024-04-20</span>
+      <span class="pill">1/3/7/14/30 horizons</span>
+      <span class="pill">5% VaR</span>
+
+      <a class="btn" href="/notebooks/thesis-arima-garch-walkthrough.ipynb">
+        Download full Jupyter notebook (.ipynb)
+      </a>
+      <a class="btn" href="/notebooks/thesis-arima-garch-interview.ipynb">
+        Download interview notebook (12 cells)
+      </a>
+      <p>
+        Use the full notebook for deep technical review and the interview version
+        for a concise 10-15 minute walkthrough.
       </p>
 
+      <h2>Notebook flow</h2>
       <div class="card">
-        <strong>Dataset setup</strong>
+        <strong>1) Data foundation</strong>
         <p>
-          Daily Yahoo Finance data from 2020-05-11 to 2024-04-20. Pipeline:
-          clean prices, compute log returns, then split into train/validation/test
-          with a 70/15/15 ratio.
+          Yahoo Finance download, quality checks, log-return transformation,
+          and train/validation/test split (70/15/15).
+        </p>
+      </div>
+      <div class="card">
+        <strong>2) Diagnostics first</strong>
+        <p>
+          Stationarity and residual diagnostics (ADF, KPSS, Ljung-Box, ARCH-LM)
+          before fitting production-style models.
+        </p>
+      </div>
+      <div class="card">
+        <strong>3) Modeling stack</strong>
+        <p>
+          ARIMA for conditional mean + GARCH family (GARCH/GJR/FIGARCH/EGARCH)
+          for volatility, selected with validation AIC logic.
+        </p>
+      </div>
+      <div class="card">
+        <strong>4) Evaluation</strong>
+        <p>
+          Rolling backtests (60-day + 365-day robustness), horizon analysis,
+          DM tests against naive/EWMA, and VaR backtests via Kupiec/Christoffersen.
         </p>
       </div>
 
-      <div class="card">
-        <strong>Model selection</strong>
-        <p>
-          Automated ARIMA + GARCH-family tuning (GARCH/GJR/FIGARCH/EGARCH)
-          using AIC and parameter significance checks. Heavy tails handled via
-          Student’s t errors.
-        </p>
-      </div>
+      <h2>Code excerpt</h2>
+      <pre><code>THESIS_CONFIG = {
+    "symbols": {"bitcoin": "BTC-USD", "ethereum": "ETH-USD", "dogecoin": "DOGE-USD", "solana": "SOL-USD"},
+    "split_ratios": (0.70, 0.15, 0.15),
+    "horizons": [1, 3, 7, 14, 30],
+    "rolling_window": 60,
+    "robustness_window": 365,
+    "ewma_lambda": 0.94,
+}
 
-      <div class="card">
-        <strong>Evaluation protocol</strong>
-        <p>
-          Multi-horizon forecasts (h = 1/3/7/14/30) plus adaptive rolling
-          backtests (60-day window, robustness check with 365-day window).
-          Benchmarks: naive return forecast and EWMA volatility. Statistical
-          checks: Diebold-Mariano, Kupiec, Christoffersen.
-        </p>
-      </div>
-
-      <pre><code># core config (excerpt)
-coins = ["BTC-USD", "ETH-USD", "DOGE-USD", "SOL-USD"]
-split = (0.70, 0.15, 0.15)
-horizons = [1, 3, 7, 14, 30]
-window = 60
-
-for coin in coins:
-    model = auto_tune_arima_garch(coin_returns, criterion="AIC")
-    rolling = backtest_rolling(model, coin_returns, window=window)
-    evaluate_dm_and_var(rolling, benchmark="naive+EWMA")</code></pre>
-
-      <p>
-        Key outcome: limited short-term return predictability, but strong
-        practical value for volatility and 5% VaR risk estimation on most assets.
-      </p>
+for asset_name in THESIS_CONFIG["symbols"]:
+    fit_bundle = fit_arima_garch_pipeline(train_returns, validation_returns)
+    rolling_results = run_rolling_backtest(return_series=full_returns, fitting_window=60)
+    horizon_results = evaluate_multi_horizon_static(fit_bundle, test_returns, horizons=[1,3,7,14,30])</code></pre>
     </div>
   </body>
 </html>

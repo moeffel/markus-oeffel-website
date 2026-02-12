@@ -12,23 +12,31 @@ function signatureFromRequest(request: Request): string | null {
 }
 
 export async function POST(request: Request) {
+  const allowUnsafeDev =
+    process.env.NODE_ENV !== "production" &&
+    process.env.ALLOW_DEV_UNSAFE_REINDEX === "1";
+
   const secret = process.env.WEBHOOK_HMAC_SECRET;
-  if (!secret) {
+  if (!secret && !allowUnsafeDev) {
     return NextResponse.json(
       { error: "missing_webhook_secret" },
       { status: 500 },
     );
   }
 
-  const signature = signatureFromRequest(request);
-  if (!signature) {
-    return NextResponse.json({ error: "missing_signature" }, { status: 401 });
-  }
+  if (!allowUnsafeDev) {
+    const signature = signatureFromRequest(request);
+    if (!signature) {
+      return NextResponse.json({ error: "missing_signature" }, { status: 401 });
+    }
 
-  const rawBody = await request.text().catch(() => "");
-  const expected = hmacSha256Hex(secret, rawBody);
-  if (!timingSafeEqualHex(signature, expected)) {
-    return NextResponse.json({ error: "invalid_signature" }, { status: 401 });
+    const rawBody = await request.text().catch(() => "");
+    const expected = hmacSha256Hex(secret!, rawBody);
+    if (!timingSafeEqualHex(signature, expected)) {
+      return NextResponse.json({ error: "invalid_signature" }, { status: 401 });
+    }
+  } else {
+    await request.text().catch(() => "");
   }
 
   if (!process.env.OPENAI_API_KEY) {
@@ -41,4 +49,3 @@ export async function POST(request: Request) {
   const report = await ingestRagCorpus();
   return NextResponse.json(report);
 }
-

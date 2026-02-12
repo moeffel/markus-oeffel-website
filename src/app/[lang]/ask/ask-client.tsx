@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { Markdown } from "@/components/markdown/markdown";
 import { TurnstileWidget } from "@/components/turnstile";
 import { trackPlausibleEvent } from "@/lib/analytics/plausible";
-import type { AskResponse } from "@/lib/ask/answer";
+import type { AskCitation, AskResponse, AskSuggestedLink } from "@/lib/ask/answer";
 import type { Language } from "@/lib/i18n";
 
 type AskState =
@@ -22,6 +23,12 @@ type AskErrorResponse =
   | { error: "captcha_invalid"; codes?: string[] }
   | { error: "provider_error" };
 
+type AskStreamEvent =
+  | { type: "meta"; citations: AskCitation[]; suggested_links: AskSuggestedLink[] }
+  | { type: "delta"; text: string }
+  | { type: "done" }
+  | { type: "error"; error: string };
+
 const SUGGESTED_QUERIES: Record<Language, string[]> = {
   de: [
     "Welche Projekte sind relevant für Fraud/Risk?",
@@ -35,12 +42,21 @@ const SUGGESTED_QUERIES: Record<Language, string[]> = {
   ],
 };
 
-export function AskClient({ lang }: { lang: Language }) {
+export function AskClient({
+  lang,
+  variant = "page",
+}: {
+  lang: Language;
+  variant?: "page" | "embed";
+}) {
   const [query, setQuery] = useState("");
   const [state, setState] = useState<AskState>({ kind: "idle" });
   const [history, setHistory] = useState<
     Array<{ q: string; a: AskResponse | null }>
   >([]);
+
+  const [answerMarkdown, setAnswerMarkdown] = useState("");
+  const [showCitations, setShowCitations] = useState(variant === "page");
 
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
   const [captchaToken, setCaptchaToken] = useState("");
@@ -48,10 +64,77 @@ export function AskClient({ lang }: { lang: Language }) {
 
   const inputRef = useRef<HTMLInputElement | null>(null);
   useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
+    if (variant === "page") inputRef.current?.focus();
+  }, [variant]);
 
   const suggested = useMemo(() => SUGGESTED_QUERIES[lang], [lang]);
+
+  async function runAskStream(q: string): Promise<AskResponse> {
+    const res = await fetch("/api/ask/stream", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        query: q,
+        lang,
+        captcha_token: captchaToken.trim() ? captchaToken : undefined,
+      }),
+    }).catch(() => null);
+
+    if (!res) throw new Error("network_error");
+    if (!res.ok) {
+      const err = (await res.json().catch(() => null)) as AskErrorResponse | null;
+      throw new Error(err?.error ?? "provider_error");
+    }
+
+    const reader = res.body?.getReader();
+    if (!reader) throw new Error("no_stream");
+
+    const decoder = new TextDecoder();
+    let buf = "";
+
+    let answer = "";
+    let nextCitations: AskCitation[] = [];
+    let nextSuggestedLinks: AskSuggestedLink[] = [];
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+
+      const lines = buf.split("\n");
+      buf = lines.pop() ?? "";
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+        const evt = JSON.parse(trimmed) as AskStreamEvent;
+
+        if (evt.type === "meta") {
+          nextCitations = evt.citations ?? [];
+          nextSuggestedLinks = evt.suggested_links ?? [];
+          continue;
+        }
+
+        if (evt.type === "delta") {
+          if (evt.text) {
+            answer += evt.text;
+            setAnswerMarkdown(answer);
+          }
+          continue;
+        }
+
+        if (evt.type === "error") {
+          throw new Error(evt.error || "provider_error");
+        }
+      }
+    }
+
+    return {
+      answer,
+      citations: nextCitations,
+      suggested_links: nextSuggestedLinks,
+    };
+  }
 
   async function runAsk(nextQuery: string) {
     const q = nextQuery.trim();
@@ -69,30 +152,16 @@ export function AskClient({ lang }: { lang: Language }) {
     }
 
     setState({ kind: "loading" });
+    setAnswerMarkdown("");
     trackPlausibleEvent("ask_query", { lang, q_len: q.length });
-    const res = await fetch("/api/ask", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        query: q,
-        lang,
-        captcha_token: captchaToken.trim() ? captchaToken : undefined,
-      }),
-    }).catch(() => null);
-
-    if (!res) {
-      setState({
-        kind: "error",
-        message: lang === "de" ? "Netzwerkfehler." : "Network error.",
-      });
-      setHistory((h) => [...h, { q, a: null }]);
+    try {
+      const data = await runAskStream(q);
+      setState({ kind: "done", data });
+      setHistory((h) => [...h, { q, a: data }]);
       return;
-    }
-
-    if (!res.ok) {
-      const err = (await res.json().catch(() => null)) as AskErrorResponse | null;
-
-      if (err?.error === "captcha_required") {
+    } catch (err) {
+      const msg = String(err instanceof Error ? err.message : err);
+      if (msg === "captcha_required") {
         setState({
           kind: "error",
           message:
@@ -103,7 +172,7 @@ export function AskClient({ lang }: { lang: Language }) {
         return;
       }
 
-      if (err?.error === "captcha_invalid") {
+      if (msg === "captcha_invalid") {
         setCaptchaToken("");
         setCaptchaResetKey((k) => k + 1);
         setState({
@@ -116,7 +185,7 @@ export function AskClient({ lang }: { lang: Language }) {
         return;
       }
 
-      if (err?.error === "budget_exceeded") {
+      if (msg === "budget_exceeded") {
         setState({
           kind: "error",
           message:
@@ -128,33 +197,41 @@ export function AskClient({ lang }: { lang: Language }) {
         return;
       }
 
-      setState({
-        kind: "error",
-        message:
-          lang === "de"
-            ? "Ask API Fehler."
-            : "Ask API error.",
-      });
-      setHistory((h) => [...h, { q, a: null }]);
-      return;
-    }
+      // fallback to non-streaming endpoint
+      const fallback = await fetch("/api/ask", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          query: q,
+          lang,
+          captcha_token: captchaToken.trim() ? captchaToken : undefined,
+        }),
+      }).catch(() => null);
 
-    const data = (await res.json().catch(() => null)) as AskResponse | null;
-    if (!data) {
-      setState({
-        kind: "error",
-        message: lang === "de" ? "Ungültige Antwort." : "Invalid response.",
-      });
-      setHistory((h) => [...h, { q, a: null }]);
-      return;
-    }
+      const data = (await fallback?.json().catch(() => null)) as AskResponse | null;
+      if (!fallback || !fallback.ok || !data) {
+        setState({
+          kind: "error",
+          message: lang === "de" ? "Ask API Fehler." : "Ask API error.",
+        });
+        setHistory((h) => [...h, { q, a: null }]);
+        return;
+      }
 
-    setState({ kind: "done", data });
-    setHistory((h) => [...h, { q, a: data }]);
+      setAnswerMarkdown(data.answer);
+      setState({ kind: "done", data });
+      setHistory((h) => [...h, { q, a: data }]);
+    }
   }
 
   return (
-    <div className="rounded-3xl border border-black/5 p-6 dark:border-white/10">
+    <div
+      className={
+        variant === "embed"
+          ? "rounded-3xl border border-white/10 bg-[rgba(8,16,28,0.35)] p-5 sm:p-6"
+          : "rounded-3xl border border-black/5 p-6 dark:border-white/10"
+      }
+    >
       {siteKey ? (
         <div className="mb-4 rounded-2xl border border-black/5 p-4 dark:border-white/10">
           <p className="text-xs font-medium text-foreground/70">
@@ -217,10 +294,18 @@ export function AskClient({ lang }: { lang: Language }) {
         </p>
       ) : null}
 
+      {state.kind === "loading" && answerMarkdown ? (
+        <div className="mt-6 space-y-4">
+          <div className="rounded-2xl border border-black/5 bg-black/[0.02] p-5 text-sm text-foreground/85 dark:border-white/10 dark:bg-white/[0.03]">
+            <Markdown text={answerMarkdown} />
+          </div>
+        </div>
+      ) : null}
+
       {state.kind === "done" ? (
         <div className="mt-6 space-y-4">
           <div className="rounded-2xl border border-black/5 bg-black/[0.02] p-5 text-sm text-foreground/85 dark:border-white/10 dark:bg-white/[0.03]">
-            {state.data.answer}
+            <Markdown text={state.data.answer} />
           </div>
 
           {state.data.suggested_links.length ? (
@@ -240,14 +325,31 @@ export function AskClient({ lang }: { lang: Language }) {
           ) : null}
 
           <div className="space-y-2">
-            <p className="text-xs font-medium text-foreground/70">Citations</p>
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-medium text-foreground/70">Citations</p>
+              {variant === "embed" ? (
+                <button
+                  type="button"
+                  onClick={() => setShowCitations((s) => !s)}
+                  className="rounded-full border border-white/15 px-3 py-1 text-xs font-medium text-foreground/75 transition hover:border-[var(--accent-cyan)]/45 hover:text-[var(--accent-cyan)]"
+                >
+                  {showCitations
+                    ? lang === "de"
+                      ? "Ausblenden"
+                      : "Hide"
+                    : lang === "de"
+                      ? "Zeigen"
+                      : "Show"}
+                </button>
+              ) : null}
+            </div>
             {state.data.citations.length === 0 ? (
               <p className="text-sm text-foreground/70">
                 {lang === "de"
                   ? "Keine passenden Quellen im Corpus gefunden."
                   : "No matching sources found in the corpus."}
               </p>
-            ) : (
+            ) : showCitations ? (
               <ul className="space-y-2">
                 {state.data.citations.map((c, idx) => (
                   <li
@@ -262,12 +364,12 @@ export function AskClient({ lang }: { lang: Language }) {
                   </li>
                 ))}
               </ul>
-            )}
+            ) : null}
           </div>
         </div>
       ) : null}
 
-      {history.length ? (
+      {variant === "page" && history.length ? (
         <div className="mt-8 border-t border-black/5 pt-6 dark:border-white/10">
           <p className="text-xs font-medium text-foreground/70">
             {lang === "de" ? "History" : "History"}

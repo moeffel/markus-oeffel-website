@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { answerFromCorpus } from "@/lib/ask/answer";
+import { answerFromCorpus, answerFromCorpusWithLlm } from "@/lib/ask/answer";
 import { getClientIp, rateLimit } from "@/lib/rate-limit";
 import { ragAnswer } from "@/lib/rag/ask";
 import { isTurnstileSecretConfigured, verifyTurnstile } from "@/lib/security/turnstile";
@@ -63,12 +63,11 @@ export async function POST(request: Request) {
     }
   }
 
-  const ragReady = Boolean(
-    process.env.OPENAI_API_KEY &&
-      (process.env.SUPABASE_DB_URL || process.env.DATABASE_URL),
-  );
+  const hasOpenAiKey = Boolean(process.env.OPENAI_API_KEY);
+  const hasDbUrl = Boolean(process.env.SUPABASE_DB_URL || process.env.DATABASE_URL);
+  const vectorRagReady = hasOpenAiKey && hasDbUrl;
 
-  if (ragReady) {
+  if (hasOpenAiKey) {
     const dailyLimit = getAskDailyLimit();
     if (dailyLimit) {
       const keyBase = parsed.data.session_id
@@ -96,16 +95,51 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = ragReady
-      ? await ragAnswer({ query: parsed.data.query, lang: parsed.data.lang })
-      : await answerFromCorpus({
-          query: parsed.data.query,
-          lang: parsed.data.lang,
-        });
+    const fallback = async () =>
+      hasOpenAiKey
+        ? await answerFromCorpusWithLlm({
+            query: parsed.data.query,
+            lang: parsed.data.lang,
+          })
+        : await answerFromCorpus({
+            query: parsed.data.query,
+            lang: parsed.data.lang,
+          });
+
+    let result = vectorRagReady ? await ragAnswer({
+      query: parsed.data.query,
+      lang: parsed.data.lang,
+    }) : await fallback();
+
+    // If the DB is misconfigured/unreachable in local dev, do not hard-fail the page.
+    // Fall back to corpus (and optionally LLM) answers.
+    if (vectorRagReady && result.citations.length === 0) {
+      result = await fallback();
+    }
 
     return NextResponse.json(result);
   } catch (err) {
-    console.error("[ask] error", { ip, err });
+    // Last resort: if vector RAG fails due to DB issues, try to degrade gracefully.
+    if (vectorRagReady) {
+      console.error("[ask] rag failed; falling back.", { ip, err });
+      try {
+        const result = hasOpenAiKey
+          ? await answerFromCorpusWithLlm({
+              query: parsed.data.query,
+              lang: parsed.data.lang,
+            })
+          : await answerFromCorpus({
+              query: parsed.data.query,
+              lang: parsed.data.lang,
+            });
+        return NextResponse.json(result);
+      } catch (fallbackErr) {
+        console.error("[ask] fallback failed.", { ip, err: fallbackErr });
+      }
+    } else {
+      console.error("[ask] error", { ip, err });
+    }
+
     return NextResponse.json({ error: "provider_error" }, { status: 500 });
   }
 }

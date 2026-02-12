@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import type { Language } from "@/lib/i18n";
+import { CONTACT_COPY } from "@/lib/content/site-copy";
 import { alternatesForPath } from "@/lib/seo";
 
 import { ContactForm } from "./contact-form";
@@ -27,6 +28,7 @@ export default async function ContactPage({
   params: Promise<{ lang: Language }>;
 }) {
   const { lang } = await params;
+  const c = CONTACT_COPY[lang];
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_360px] rise-in">
@@ -35,15 +37,13 @@ export default async function ContactPage({
         <div className="relative space-y-3">
           <p className="inline-flex items-center gap-2 rounded-full border border-[var(--finance-gold)]/35 bg-[rgba(216,178,107,0.08)] px-3 py-1 text-[11px] font-semibold tracking-[0.16em] text-[var(--finance-gold)] uppercase">
             <span className="h-1.5 w-1.5 rounded-full bg-[var(--finance-gold)] pulse-line" />
-            {lang === "de" ? "Start a project" : "Start a project"}
+            {c.eyebrow}
           </p>
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            {lang === "de" ? "Kontakt" : "Contact"}
+            {c.title}
           </h1>
           <p className="max-w-2xl text-pretty text-foreground/70">
-            {lang === "de"
-              ? "Schreib kurz, worum es geht."
-              : "Send a short note."}
+            {c.subtitle}
           </p>
           <ContactForm lang={lang} />
         </div>
@@ -51,28 +51,26 @@ export default async function ContactPage({
 
       <aside className="surface-card space-y-5 rounded-3xl p-6 text-sm text-foreground/75">
         <p className="font-medium text-foreground/90">
-          {lang === "de" ? "Prefer async?" : "Prefer async?"}
+          {c.asideTitle}
         </p>
         <p>
-          {lang === "de"
-            ? "Schick Kontext + Ziel + Deadline. Du bekommst einen klaren Plan als Antwort."
-            : "Send context + goal + deadline. You’ll get a clear execution plan."}
+          {c.asideBody}
         </p>
         <div className="space-y-3">
           <div className="rounded-2xl border border-white/12 bg-[rgba(8,16,28,0.6)] p-4">
             <p className="text-xs uppercase tracking-wide text-foreground/55">
-              {lang === "de" ? "Response" : "Response"}
+              {c.responseLabel}
             </p>
             <p className="mt-1 font-medium text-foreground">
-              {lang === "de" ? "Innerhalb von 24h" : "Within 24h"}
+              {c.responseValue}
             </p>
           </div>
           <div className="rounded-2xl border border-white/12 bg-[rgba(8,16,28,0.6)] p-4">
             <p className="text-xs uppercase tracking-wide text-foreground/55">
-              {lang === "de" ? "Scope" : "Scope"}
+              {c.scopeLabel}
             </p>
             <p className="mt-1 font-medium text-foreground">
-              {lang === "de" ? "FinTech, Risk, AI, Data" : "FinTech, risk, AI, data"}
+              {c.scopeValue}
             </p>
           </div>
         </div>

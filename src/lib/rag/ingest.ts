@@ -6,13 +6,17 @@ import { PDFParse } from "pdf-parse";
 import {
   getCaseStudies,
   getExperience,
+  getHowIWorkPrinciples,
+  getSiteSettings,
+  getSkillCategories,
   getThesis,
 } from "@/lib/content";
 import { openAiEmbedding } from "@/lib/ai/openai";
-import { ragGetExistingHashes, ragUpsertChunk, type RagVisibility } from "@/lib/rag/db";
+import { ragGetExistingHashes, ragPruneMissingIds, ragUpsertChunk, type RagVisibility } from "@/lib/rag/db";
 import { getPrivateProfileContent } from "@/lib/rag/private-profile";
 import { getSiteUrl } from "@/lib/seo";
-import type { CaseStudy, ExperienceItem, Thesis } from "@/lib/content/schemas";
+import { CONTACT_COPY, LANDING_COPY, LEGAL_COPY } from "@/lib/content/site-copy";
+import type { CaseStudy, ExperienceItem, HowIWorkPrinciple, SiteSettings, SkillCategory, Thesis } from "@/lib/content/schemas";
 
 type RagChunkInput = {
   id: string;
@@ -39,29 +43,88 @@ function clampText(text: string, maxChars: number): string {
   return `${clean.slice(0, Math.max(0, maxChars - 1))}…`;
 }
 
-function splitIntoReasonableChunks(text: string, maxChars = 1200): string[] {
-  const blocks = text
-    .split(/\n{2,}/g)
-    .map((b) => b.trim())
+function splitSentences(text: string): string[] {
+  const clean = text.replace(/\s+/g, " ").trim();
+  if (!clean) return [];
+  // Heuristic sentence split good enough for DE/EN (no extra deps).
+  return clean
+    .split(/(?<=[.!?])\s+(?=[^\s])/g)
+    .map((s) => s.trim())
     .filter(Boolean);
+}
+
+function splitIntoReasonableChunks(
+  text: string,
+  maxChars = 1200,
+  overlapSentences = 2,
+): string[] {
+  const sentences = splitSentences(text);
+  if (sentences.length === 0) return [];
 
   const out: string[] = [];
-  let buf = "";
-  for (const b of blocks) {
-    if (!buf) {
-      buf = b;
-      continue;
-    }
-    if (buf.length + 2 + b.length <= maxChars) {
-      buf = `${buf}\n\n${b}`;
-      continue;
-    }
-    out.push(buf);
-    buf = b;
-  }
-  if (buf) out.push(buf);
+  let buf: string[] = [];
+  let bufLen = 0;
 
+  for (const s of sentences) {
+    const nextLen = bufLen + (buf.length ? 1 : 0) + s.length;
+    if (buf.length > 0 && nextLen > maxChars) {
+      out.push(buf.join(" "));
+      const overlap = overlapSentences > 0 ? buf.slice(-overlapSentences) : [];
+      buf = [...overlap, s];
+      bufLen = buf.join(" ").length;
+      continue;
+    }
+
+    buf.push(s);
+    bufLen = nextLen;
+  }
+
+  if (buf.length) out.push(buf.join(" "));
   return out;
+}
+
+function chunkSection(input: {
+  docId: string;
+  title: string;
+  href: string | null;
+  sectionId: string;
+  lang: "de" | "en";
+  visibility: RagVisibility;
+  content: string;
+  maxChars?: number;
+}): RagChunkInput[] {
+  const blocks = splitIntoReasonableChunks(
+    input.content,
+    input.maxChars ?? 1200,
+    2,
+  );
+
+  if (blocks.length === 0) return [];
+  if (blocks.length === 1) {
+    const c: Omit<RagChunkInput, "id"> = {
+      docId: input.docId,
+      title: input.title,
+      href: input.href,
+      sectionId: input.sectionId,
+      lang: input.lang,
+      visibility: input.visibility,
+      content: blocks[0]!,
+    };
+    return [{ ...c, id: makeId(c) }];
+  }
+
+  return blocks.map((block, idx) => {
+    const c: Omit<RagChunkInput, "id"> = {
+      docId: input.docId,
+      title: input.title,
+      href: input.href,
+      sectionId: `${input.sectionId}:${idx}`,
+      lang: input.lang,
+      visibility: input.visibility,
+      content: block,
+    };
+    return { ...c, id: makeId(c) };
+  });
 }
 
 function caseStudyChunks(cs: CaseStudy, lang: "de" | "en"): RagChunkInput[] {
@@ -78,40 +141,80 @@ function caseStudyChunks(cs: CaseStudy, lang: "de" | "en"): RagChunkInput[] {
     visibility: "public" as const,
   };
 
-  const chunks: Array<Omit<RagChunkInput, "id">> = [
-    { ...base, sectionId: "summary", content: cs.summary[lang] },
-    { ...base, sectionId: "context", content: cs.context[lang] },
-    { ...base, sectionId: "problem", content: cs.problem[lang] },
-    { ...base, sectionId: "solution", content: cs.solution[lang].join("\n") },
-    { ...base, sectionId: "constraints", content: cs.constraints[lang].join("\n") },
-    { ...base, sectionId: "role", content: cs.yourRole[lang].join("\n") },
-    {
+  const chunks: RagChunkInput[] = [];
+  chunks.push(
+    ...chunkSection({
+      ...base,
+      sectionId: "summary",
+      content: cs.summary[lang],
+    }),
+  );
+  chunks.push(
+    ...chunkSection({
+      ...base,
+      sectionId: "context",
+      content: cs.context[lang],
+    }),
+  );
+  chunks.push(
+    ...chunkSection({
+      ...base,
+      sectionId: "problem",
+      content: cs.problem[lang],
+    }),
+  );
+  chunks.push(
+    ...chunkSection({
+      ...base,
+      sectionId: "solution",
+      content: cs.solution[lang].join("\n"),
+    }),
+  );
+  chunks.push(
+    ...chunkSection({
+      ...base,
+      sectionId: "constraints",
+      content: cs.constraints[lang].join("\n"),
+    }),
+  );
+  chunks.push(
+    ...chunkSection({
+      ...base,
+      sectionId: "role",
+      content: cs.yourRole[lang].join("\n"),
+    }),
+  );
+  chunks.push(
+    ...chunkSection({
       ...base,
       sectionId: "impact",
       content: cs.impact[lang].map((i) => i.text).join("\n"),
-    },
-  ];
+    }),
+  );
 
   if (cs.architecture?.type === "text" || cs.architecture?.type === "mermaid") {
-    chunks.push({
-      ...base,
-      sectionId: "architecture",
-      content: cs.architecture.payload[lang],
-    });
+    chunks.push(
+      ...chunkSection({
+        ...base,
+        sectionId: "architecture",
+        content: cs.architecture.payload[lang],
+      }),
+    );
   }
 
   if (cs.learnings) {
-    chunks.push({
-      ...base,
-      sectionId: "learnings",
-      content: cs.learnings[lang].join("\n"),
-    });
+    chunks.push(
+      ...chunkSection({
+        ...base,
+        sectionId: "learnings",
+        content: cs.learnings[lang].join("\n"),
+      }),
+    );
   }
 
   return chunks
     .map((c) => ({ ...c, content: c.content.trim() }))
-    .filter((c) => Boolean(c.content))
-    .map((c) => ({ ...c, id: makeId(c) }));
+    .filter((c) => Boolean(c.content));
 }
 
 function experienceChunks(items: readonly ExperienceItem[], lang: "de" | "en"): RagChunkInput[] {
@@ -121,16 +224,18 @@ function experienceChunks(items: readonly ExperienceItem[], lang: "de" | "en"): 
     const title = `${item.role[lang]}${item.org ? ` @ ${item.org}` : ""}`;
     const href = `/${lang}/experience`;
     const content = item.outcomes[lang].join("\n");
-    const c: Omit<RagChunkInput, "id"> = {
-      docId,
-      title,
-      href,
-      sectionId: "outcomes",
-      lang,
-      visibility: "public",
-      content,
-    };
-    chunks.push({ ...c, id: makeId(c) });
+    chunks.push(
+      ...chunkSection({
+        docId,
+        title,
+        href,
+        sectionId: "outcomes",
+        lang,
+        visibility: "public",
+        content,
+        maxChars: 1000,
+      }),
+    );
   }
   return chunks;
 }
@@ -144,12 +249,204 @@ function thesisChunks(thesis: Thesis, lang: "de" | "en"): RagChunkInput[] {
     visibility: "public",
   };
 
-  const summary: Omit<RagChunkInput, "id"> = {
+  return chunkSection({
     ...base,
     sectionId: "summary",
     content: thesis.summary[lang],
-  };
-  return [{ ...summary, id: makeId(summary) }];
+    maxChars: 1000,
+  });
+}
+
+function siteSettingsChunks(settings: SiteSettings, lang: "de" | "en"): RagChunkInput[] {
+  const docId = "site_settings";
+  const title = lang === "de" ? "Website Settings" : "Website settings";
+  const href = `/${lang}`;
+
+  const blocks: Array<{ sectionId: string; content: string }> = [];
+
+  if (settings.bookCallUrl) {
+    blocks.push({ sectionId: "book_call_url", content: `bookCallUrl: ${settings.bookCallUrl}` });
+  }
+  if (settings.cvUrl) {
+    blocks.push({ sectionId: "cv_url", content: `cvUrl: ${settings.cvUrl}` });
+  }
+
+  if (settings.socialLinks.length) {
+    blocks.push({
+      sectionId: "social_links",
+      content: settings.socialLinks
+        .map((l) => `${l.label}: ${l.url}`)
+        .join("\n"),
+    });
+  }
+
+  if (settings.heroKpis.length) {
+    blocks.push({
+      sectionId: "hero_kpis",
+      content: settings.heroKpis
+        .map((k) => `${k.label[lang]}: ${k.value}`)
+        .join("\n"),
+    });
+  }
+
+  return blocks.flatMap((b) =>
+    chunkSection({
+      docId,
+      title,
+      href,
+      sectionId: b.sectionId,
+      lang,
+      visibility: "public",
+      content: b.content,
+      maxChars: 900,
+    }),
+  );
+}
+
+function skillsChunks(categories: readonly SkillCategory[], lang: "de" | "en"): RagChunkInput[] {
+  const chunks: RagChunkInput[] = [];
+  for (const category of categories) {
+    const docId = `skills:${category.title.en.toLowerCase().replace(/\s+/g, "-")}`;
+    const title = category.title[lang];
+    const href = `/${lang}/skills`;
+    const content = category.items
+      .map((i) => (i.note ? `${i.name} — ${i.note[lang]}` : i.name))
+      .join("\n");
+    chunks.push(
+      ...chunkSection({
+        docId,
+        title,
+        href,
+        sectionId: "items",
+        lang,
+        visibility: "public",
+        content,
+      }),
+    );
+  }
+  return chunks;
+}
+
+function howIWorkChunks(principles: readonly HowIWorkPrinciple[], lang: "de" | "en"): RagChunkInput[] {
+  const chunks: RagChunkInput[] = [];
+  for (const p of principles) {
+    const docId = `how_i_work:${p.title.en.toLowerCase().replace(/\s+/g, "-")}`;
+    const title = p.title[lang];
+    const href = `/${lang}/skills`;
+    const content = p.body[lang];
+    chunks.push(
+      ...chunkSection({
+        docId,
+        title,
+        href,
+        sectionId: "principle",
+        lang,
+        visibility: "public",
+        content,
+        maxChars: 900,
+      }),
+    );
+  }
+  return chunks;
+}
+
+function legalSectionToText(section: {
+  title: string;
+  description?: string;
+  paragraphs?: readonly string[];
+  listItems?: readonly string[];
+  infoItems?: readonly { label: string; value: string }[];
+}): string {
+  const parts: string[] = [];
+  parts.push(section.title);
+  if (section.description) parts.push(section.description);
+  if (section.infoItems?.length) {
+    parts.push(
+      section.infoItems.map((i) => `${i.label}: ${i.value}`).join("\n"),
+    );
+  }
+  if (section.paragraphs?.length) parts.push(section.paragraphs.join("\n"));
+  if (section.listItems?.length) parts.push(section.listItems.join("\n"));
+  return parts.filter(Boolean).join("\n");
+}
+
+function staticSiteCopyChunks(lang: "de" | "en"): RagChunkInput[] {
+  const chunks: RagChunkInput[] = [];
+
+  const landing = LANDING_COPY[lang];
+  const landingContent = [
+    landing.headline,
+    landing.sub,
+    "",
+    ...landing.trustPoints,
+  ].join("\n");
+  {
+    chunks.push(
+      ...chunkSection({
+        docId: "page:home",
+        title: lang === "de" ? "Startseite" : "Home",
+        href: `/${lang}`,
+        sectionId: "hero",
+        lang,
+        visibility: "public",
+        content: landingContent,
+      }),
+    );
+  }
+
+  const contact = CONTACT_COPY[lang];
+  const contactContent = [
+    contact.title,
+    contact.subtitle,
+    "",
+    `${contact.asideTitle}: ${contact.asideBody}`,
+    `${contact.responseLabel}: ${contact.responseValue}`,
+    `${contact.scopeLabel}: ${contact.scopeValue}`,
+  ].join("\n");
+  {
+    chunks.push(
+      ...chunkSection({
+        docId: "page:contact",
+        title: lang === "de" ? "Kontakt" : "Contact",
+        href: `/${lang}/contact`,
+        sectionId: "copy",
+        lang,
+        visibility: "public",
+        content: contactContent,
+      }),
+    );
+  }
+
+  const legal =
+    lang === "de"
+      ? [LEGAL_COPY.impressum_de, LEGAL_COPY.datenschutz_de]
+      : [LEGAL_COPY.imprint_en, LEGAL_COPY.privacy_en];
+
+  for (const page of legal) {
+    const pageText = [
+      page.title,
+      page.subtitle,
+      "",
+      ...page.sections.map(legalSectionToText),
+      page.note ? `\nNote: ${page.note}` : "",
+    ]
+      .join("\n\n")
+      .trim();
+
+    chunks.push(
+      ...chunkSection({
+        docId: `page:${page.href}`,
+        title: page.title,
+        href: page.href,
+        sectionId: "legal",
+        lang,
+        visibility: "public",
+        content: pageText,
+      }),
+    );
+  }
+
+  return chunks;
 }
 
 async function fetchUrlText(url: string): Promise<string | null> {
@@ -324,11 +621,15 @@ export async function ingestRagCorpus(): Promise<{
   total: number;
   skipped: number;
   upserted: number;
+  deleted: number;
 }> {
-  const [caseStudies, thesis, experience] = await Promise.all([
+  const [caseStudies, thesis, experience, settings, categories, howIWork] = await Promise.all([
     getCaseStudies({ publishedOnly: true }),
     getThesis(),
     getExperience(),
+    getSiteSettings(),
+    getSkillCategories(),
+    getHowIWorkPrinciples(),
   ]);
 
   const langs: Array<"de" | "en"> = ["de", "en"];
@@ -338,11 +639,20 @@ export async function ingestRagCorpus(): Promise<{
     for (const cs of caseStudies) allChunks.push(...caseStudyChunks(cs, lang));
     allChunks.push(...thesisChunks(thesis, lang));
     allChunks.push(...experienceChunks(experience, lang));
+    allChunks.push(...siteSettingsChunks(settings, lang));
+    allChunks.push(...skillsChunks(categories, lang));
+    allChunks.push(...howIWorkChunks(howIWork, lang));
+    allChunks.push(...staticSiteCopyChunks(lang));
     allChunks.push(...(await thesisAssetChunks(thesis, lang)));
     allChunks.push(...(await privateProfileChunks(lang)));
   }
 
   const existing = await ragGetExistingHashes();
+
+  const pruneEnabled = process.env.RAG_PRUNE_MISSING === "1";
+  const deleted = pruneEnabled
+    ? (await ragPruneMissingIds({ ids: allChunks.map((c) => c.id) })).deleted
+    : 0;
 
   const toUpsert = allChunks
     .map((c) => ({ ...c, content: c.content.trim() }))
@@ -352,7 +662,12 @@ export async function ingestRagCorpus(): Promise<{
 
   const skipped = allChunks.length - toUpsert.length;
 
-  await mapWithConcurrency(toUpsert, 2, async ({ chunk, hash }) => {
+  const concRaw = Number(process.env.RAG_INGEST_CONCURRENCY ?? 2);
+  const concurrency = Number.isFinite(concRaw)
+    ? Math.min(6, Math.max(1, Math.floor(concRaw)))
+    : 2;
+
+  await mapWithConcurrency(toUpsert, concurrency, async ({ chunk, hash }) => {
     const embedding = await openAiEmbedding({ text: clampText(chunk.content, 6000) });
     await ragUpsertChunk({
       id: chunk.id,
@@ -373,5 +688,6 @@ export async function ingestRagCorpus(): Promise<{
     total: allChunks.length,
     skipped,
     upserted: toUpsert.length,
+    deleted,
   };
 }

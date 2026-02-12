@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Profile placeholder">
+  <defs>
+    <radialGradient id="bg" cx="40%" cy="20%" r="80%">
+      <stop offset="0%" stop-color="#2b3a52"/>
+      <stop offset="55%" stop-color="#0b1220"/>
+      <stop offset="100%" stop-color="#070b12"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5dd9ff"/>
+      <stop offset="50%" stop-color="#e26bff"/>
+      <stop offset="100%" stop-color="#4ce0b3"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.75 0" result="colored"/>
+      <feMerge>
+        <feMergeNode in="colored"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="512" height="512" fill="url(#bg)"/>
+
+  <!-- subtle grid -->
+  <g opacity="0.18">
+    <path d="M0 64H512M0 128H512M0 192H512M0 256H512M0 320H512M0 384H512M0 448H512" stroke="#5dd9ff" stroke-width="1"/>
+    <path d="M64 0V512M128 0V512M192 0V512M256 0V512M320 0V512M384 0V512M448 0V512" stroke="#5dd9ff" stroke-width="1"/>
+  </g>
+
+  <!-- ring -->
+  <circle cx="256" cy="256" r="212" fill="none" stroke="url(#ring)" stroke-width="10" filter="url(#glow)"/>
+  <circle cx="256" cy="256" r="212" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="2"/>
+
+  <!-- silhouette -->
+  <g fill="rgba(237,242,249,0.88)">
+    <circle cx="256" cy="214" r="76"/>
+    <path d="M128 418c18-76 68-118 128-118s110 42 128 118c-42 32-89 50-128 50s-86-18-128-50z" opacity="0.92"/>
+  </g>
+
+  <!-- accent dots -->
+  <g opacity="0.55">
+    <circle cx="118" cy="128" r="3" fill="#e26bff"/>
+    <circle cx="392" cy="142" r="3" fill="#4ce0b3"/>
+    <circle cx="408" cy="372" r="3" fill="#5dd9ff"/>
+    <circle cx="132" cy="380" r="3" fill="#d8b26b"/>
+  </g>
+</svg>

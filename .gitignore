@@ -44,6 +44,14 @@ private_corpus/high_profile_cv.md
 .direct-dev.mjs
 .node-report.json
 .turbo.log
+.playwright/
+.playwright-cli/
+output/
+.start-qa.log
+.start-qa.pid
+.tmp-read-test
+.git_dead/
+.claude/
 
 # vercel
 .vercel

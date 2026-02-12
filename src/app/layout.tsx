@@ -4,6 +4,7 @@ import Script from "next/script";
 import "./globals.css";
 
 import { PlausibleProvider } from "@/components/analytics/plausible-provider";
+import { PointerGlow } from "@/components/motion/pointer-glow";
 import { DEFAULT_LANGUAGE, isLanguage } from "@/lib/i18n";
 import { getSiteUrl, isPublicIndexingEnabled } from "@/lib/seo";
 
@@ -41,8 +42,9 @@ export default async function RootLayout({
     })();
 
   return (
-    <html lang={lang}>
+    <html lang={lang} suppressHydrationWarning>
       <body className="antialiased bg-background text-foreground">
+        <PointerGlow />
         {plausibleSrc && plausibleDomain ? (
           <Script
             defer

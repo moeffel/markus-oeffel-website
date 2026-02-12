@@ -13,9 +13,18 @@ export type RagChunkRow = {
   content: string;
   content_hash: string;
   updated_at: string;
+  distance: number;
 };
 
 let pool: Pool | null = null;
+
+function shouldUseSsl(connectionString: string): boolean {
+  const lower = connectionString.toLowerCase();
+  if (lower.includes("sslmode=require")) return true;
+  if (lower.includes("ssl=true")) return true;
+  if (lower.includes("pgbouncer=true")) return true;
+  return false;
+}
 
 function getPool(): Pool {
   if (pool) return pool;
@@ -25,13 +34,26 @@ function getPool(): Pool {
     throw new Error("Missing SUPABASE_DB_URL (or DATABASE_URL).");
   }
 
+  const wantsSsl =
+    process.env.NODE_ENV === "production" || shouldUseSsl(connectionString);
+
+  const familyRaw = (process.env.PG_FAMILY ?? "").trim();
+  const family = familyRaw === "4" ? 4 : familyRaw === "6" ? 6 : undefined;
+
+  const timeoutRaw = (process.env.PG_CONNECT_TIMEOUT_MS ?? "").trim();
+  const timeoutParsed = timeoutRaw ? Number(timeoutRaw) : NaN;
+  const connectionTimeoutMillis = Number.isFinite(timeoutParsed) && timeoutParsed > 0
+    ? Math.floor(timeoutParsed)
+    : process.env.NODE_ENV === "production"
+      ? 10_000
+      : 5_000;
+
   pool = new Pool({
     connectionString,
     max: 5,
-    ssl:
-      process.env.NODE_ENV === "production"
-        ? { rejectUnauthorized: false }
-        : undefined,
+    ssl: wantsSsl ? { rejectUnauthorized: false } : undefined,
+    ...(family ? { family } : {}),
+    connectionTimeoutMillis,
   });
 
   return pool;
@@ -62,7 +84,8 @@ export async function ragVectorSearch(input: {
         visibility,
         content,
         content_hash,
-        updated_at
+        updated_at,
+        (embedding <=> $3::vector) as distance
       from rag_chunks
       where lang = $1
         and visibility = any($2::text[])
@@ -84,6 +107,23 @@ export async function ragGetExistingHashes(): Promise<Map<string, string>> {
   const map = new Map<string, string>();
   for (const row of rows) map.set(row.id, row.content_hash);
   return map;
+}
+
+export async function ragPruneMissingIds(input: {
+  ids: readonly string[];
+}): Promise<{ deleted: number }> {
+  const p = getPool();
+  if (input.ids.length === 0) return { deleted: 0 };
+
+  const { rowCount } = await p.query(
+    `
+      delete from rag_chunks
+      where not (id = any($1::text[]))
+    `,
+    [input.ids],
+  );
+
+  return { deleted: rowCount ?? 0 };
 }
 
 export async function ragUpsertChunk(input: {

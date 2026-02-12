@@ -1,36 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { ProfilePhoto } from "@/components/profile-photo";
 import { JsonLd } from "@/components/json-ld";
+import { AskClient } from "@/app/[lang]/ask/ask-client";
 import { getSiteSettings } from "@/lib/content";
+import { LANDING_COPY } from "@/lib/content/site-copy";
 import type { Language } from "@/lib/i18n";
 import { alternatesForPath, getSiteUrl } from "@/lib/seo";
-
-const COPY: Record<Language, { headline: string; sub: string }> = {
-  de: {
-    headline: "FinTech Builder. Trust-first. Subtil frech.",
-    sub: "Premium Engineering für Payments, Risk & AI—ohne Buzzword-Wolke.",
-  },
-  en: {
-    headline: "FinTech builder. Trust-first. Subtly bold.",
-    sub: "Premium engineering for payments, risk & AI—without the buzzword fog.",
-  },
-};
-
-const TRUST_POINTS: Record<Language, string[]> = {
-  de: [
-    "Trust-first Architektur für regulierte Umgebungen",
-    "Delivery mit klaren KPIs statt Buzzword-Roadmaps",
-    "AI nur mit belastbaren Quellen und Kostenkontrolle",
-    "CFA Level I Kandidat — Prüfung geplant für August 2026",
-  ],
-  en: [
-    "Trust-first architecture for regulated environments",
-    "Delivery with clear KPIs instead of buzzword roadmaps",
-    "AI only with reliable sources and cost controls",
-    "CFA Level I candidate — exam planned for August 2026",
-  ],
-};
 
 export async function generateMetadata({
   params,
@@ -38,7 +15,7 @@ export async function generateMetadata({
   params: Promise<{ lang: Language }>;
 }): Promise<Metadata> {
   const { lang } = await params;
-  const c = COPY[lang];
+  const c = LANDING_COPY[lang];
   return {
     title: lang === "de" ? "FinTech Builder" : "FinTech builder",
     description: c.sub,
@@ -52,9 +29,14 @@ export default async function LandingPage({
   params: Promise<{ lang: Language }>;
 }) {
   const { lang } = await params;
-  const c = COPY[lang];
+  const c = LANDING_COPY[lang];
   const settings = await getSiteSettings();
   const siteUrl = getSiteUrl();
+  const profilePhotoSrc = process.env.NEXT_PUBLIC_PROFILE_PHOTO ?? "/profile-placeholder.svg";
+  const profilePhotoUrl =
+    profilePhotoSrc.startsWith("http://") || profilePhotoSrc.startsWith("https://")
+      ? profilePhotoSrc
+      : `${siteUrl}${profilePhotoSrc.startsWith("/") ? profilePhotoSrc : `/${profilePhotoSrc}`}`;
   const kpis =
     settings.heroKpis.length
       ? settings.heroKpis.map((k) => ({
@@ -82,6 +64,7 @@ export default async function LandingPage({
         "@id": `${siteUrl}#person`,
         name: "Markus Öffel",
         url: siteUrl,
+        image: profilePhotoUrl,
         sameAs: settings.socialLinks.map((l) => l.url),
       },
     ],
@@ -99,6 +82,19 @@ export default async function LandingPage({
               <span className="h-1.5 w-1.5 rounded-full bg-[var(--finance-gold)] pulse-line" />
               Finance-class × AI delivery
             </p>
+            <div className="mt-5 flex items-center gap-3">
+              <ProfilePhoto alt="Markus Öffel" size={56} priority />
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-foreground">
+                  Markus Öffel
+                </p>
+                <p className="truncate text-xs text-foreground/70">
+                  {lang === "de"
+                    ? "FinTech Builder · Risk · AI"
+                    : "FinTech builder · Risk · AI"}
+                </p>
+              </div>
+            </div>
             <h1 className="mt-4 text-balance text-4xl font-semibold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
               {c.headline}
             </h1>
@@ -106,7 +102,7 @@ export default async function LandingPage({
               {c.sub}
             </p>
             <ul className="mt-6 space-y-2 text-sm text-foreground/85">
-              {TRUST_POINTS[lang].map((point) => (
+              {c.trustPoints.map((point) => (
                 <li key={point} className="flex items-start gap-3">
                   <span className="mt-1.5 inline-block h-2 w-2 rounded-full bg-[var(--accent-emerald)] shadow-[0_0_10px_rgba(76,224,179,0.55)]" />
                   <span>{point}</span>
@@ -195,12 +191,37 @@ export default async function LandingPage({
             <div className="mt-4 rounded-2xl border border-white/10 bg-[rgba(9,17,29,0.72)] p-4 font-mono text-xs text-foreground/80">
               <p className="text-[var(--accent-emerald)]">$ ask --topic trust --domain fintech</p>
               <p className="mt-2 text-foreground/70">
-                {lang === "de"
-                  ? "Antworten mit Quellen, nicht mit Halluzinationen."
-                  : "Answers with citations, not hallucinations."}
+                {c.askSignalLine}
               </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="surface-card cyber-grid rounded-3xl p-6 sm:p-8">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-medium tracking-[0.14em] text-foreground/55 uppercase">
+              {lang === "de" ? "Ask" : "Ask"}
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+              {lang === "de" ? "Frag mein Portfolio" : "Ask my portfolio"}
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm text-foreground/70">
+              {lang === "de"
+                ? "Streaming-Antworten mit Markdown + Citations."
+                : "Streaming answers with Markdown + citations."}
+            </p>
+          </div>
+          <Link
+            href={`/${lang}/ask`}
+            className="inline-flex h-10 items-center justify-center rounded-full border border-white/15 bg-white/5 px-4 text-xs font-medium text-foreground/85 transition hover:border-[var(--accent-cyan)]/45 hover:text-[var(--accent-cyan)]"
+          >
+            {lang === "de" ? "Groß öffnen" : "Open full"}
+          </Link>
+        </div>
+        <div className="mt-5">
+          <AskClient lang={lang} variant="embed" />
         </div>
       </section>
 

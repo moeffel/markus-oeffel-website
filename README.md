@@ -27,6 +27,7 @@ cp .env.example .env.local
 Notes:
 - The site runs without most env vars (falls back to local placeholder content and disables captcha verification in dev).
 - For production/staging you should set all required env vars.
+- For the landing-page profile photo, put an image into `public/` (e.g. `public/profile.jpg`) and set `NEXT_PUBLIC_PROFILE_PHOTO=/profile.jpg`.
 
 3. Run dev server:
 
@@ -69,6 +70,19 @@ Body can include `{ type/documentType, slug }` (or explicit `paths: string[]`).
 ### Database
 
 Run the migration in `db/001_rag_chunks.sql` on your Supabase Postgres database (pgvector required).
+
+### Ingest / Reindex
+
+The vector store is filled via `POST /api/reindex` (HMAC-protected in prod).
+
+Local dev shortcut:
+- Set `ALLOW_DEV_UNSAFE_REINDEX=1` in `.env.local`
+- Call:
+  - `curl -sS -X POST http://localhost:3000/api/reindex | cat`
+
+Optional tuning knobs:
+- Retrieval: `ASK_TOP_K`, `ASK_CANDIDATES`, `ASK_MAX_PER_DOC`, `ASK_MIN_COSINE_SIMILARITY`
+- Ingestion: `RAG_INGEST_CONCURRENCY`, `RAG_PRUNE_MISSING=1` (keeps the index clean when chunking changes)
 
 ### Private corpus
 

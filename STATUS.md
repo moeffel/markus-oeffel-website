@@ -8,6 +8,22 @@ Stand: 2026-02-11
 - Spezifikation in `fintech-wow-portfolio-spec/SPEC/*` ist weiterhin mit `Status: Draft` markiert.
 - Git-Repository ist initialisiert, aber ohne Commit-Historie (alles aktuell uncommitted).
 
+## Neuer Ausbau-Loop (2026-02-12)
+
+- Landingpage inhaltlich und visuell weiter in Richtung „About me + Ask/RAG“ ausgebaut.
+- Hero neu positioniert:
+  - klare persönliche Positionierung („Hi, ich bin Markus Öffel / Hi, I’m Markus Öffel“),
+  - Proof-Chips (Studium, AI-Track, CFA Level I Teaser),
+  - größere Profilbild-Integration direkt im Above-the-fold.
+- About-Block erweitert mit klarer Execution-Baseline (KPI-Tiles + fokussierte Capability-Module).
+- Ask-Bereich geschärft:
+  - weiterhin „You can ask anything about me“,
+  - neue RAG-Guardrails (Quellenbindung, Transparenz bei fehlenden Infos, keine Spekulation).
+- Fokus-Sektion als „What I build right now / Woran ich aktuell baue“ umgestellt.
+- Dateien:
+  - `src/app/[lang]/page.tsx`
+  - `src/lib/content/site-copy.ts`
+
 ## Agentic Loop (2026-02-11)
 
 - Schritt 1 abgeschlossen: notwendige MD-Grundlage erneut geprüft (`README`, `docs/SOFTWARE_DESIGN`, `SPEC/DESIGN_SYSTEM`, `SPEC/REQUIREMENTS`, `SPEC/CONTEXT`).

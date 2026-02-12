@@ -23,6 +23,7 @@ export const LANDING_COPY: Record<
   {
     headline: string;
     sub: string;
+    proofChips: readonly string[];
     trustPoints: readonly string[];
     aboutEyebrow: string;
     aboutTitle: string;
@@ -34,46 +35,58 @@ export const LANDING_COPY: Record<
     askExamplePrompts: readonly string[];
     ragTitle: string;
     ragSteps: readonly string[];
+    ragGuardrails: readonly string[];
     focusTitle: string;
     focusAreas: readonly LandingFocusArea[];
   }
 > = {
   de: {
-    headline: "FinTech Builder. Trust-first. Subtil frech.",
-    sub: "Premium Engineering für Payments, Risk & AI—ohne Buzzword-Wolke.",
-    trustPoints: [
-      "Trust-first Architektur für regulierte Umgebungen",
-      "Delivery mit klaren KPIs statt Buzzword-Roadmaps",
-      "AI nur mit belastbaren Quellen und Kostenkontrolle",
-      "CFA Level I Kandidat — Prüfung geplant für August 2026",
+    headline: "Hi, ich bin Markus Öffel.",
+    sub: "Ich baue trust-kritische FinTech-Systeme an der Schnittstelle von Tech, Quant und AI Engineering.",
+    proofChips: [
+      "MSc Finance",
+      "BSc Innovationsmanagement",
+      "AI Engineer Core Track (LLM/RAG/Agents)",
+      "CFA Level I · August 2026",
     ],
-    aboutEyebrow: "About me",
-    aboutTitle: "Markus Öffel — Tech × Quant × AI Engineering.",
+    trustPoints: [
+      "Architektur zuerst: erst klare Systemgrenzen, dann Features.",
+      "Messbar liefern: KPIs, SLOs und saubere Runbooks statt Roadmap-Show.",
+      "AI mit Belegen: RAG + Citations statt Halluzinationen.",
+      "Regulatorische Realität: Datenschutz, Auditability und Kostenkontrolle von Anfang an.",
+    ],
+    aboutEyebrow: "Über mich",
+    aboutTitle: "Senior Engineer mit Quant- und Produktblick.",
     aboutSubtitle:
-      "Ich baue belastbare Systeme für FinTech, Risiko-Entscheidungen und produktionsreife AI-Anwendungen.",
+      "Von Fraud-Decisioning über KYC bis zu AI-Assistenz: Ich liefere Systeme, die in Produktion bestehen und verständlich bleiben.",
     aboutParagraphs: [
-      "Ich bin Markus Öffel und baue FinTech-Produkte an der Schnittstelle von Payments, Risk/Fraud und AI.",
-      "Mein Fokus liegt auf klarer Architektur, nachvollziehbaren Entscheidungen und messbaren Outcomes statt reiner Feature-Menge.",
-      "Mit MSc-Finance-Hintergrund und Engineering-Praxis liefere ich Lösungen, die in regulierten Umgebungen belastbar bleiben.",
+      "Ich verbinde technische Umsetzung, quantitative Denkweise und Produktfokus zu einer klaren Delivery-Linie.",
+      "Meine Arbeit startet bei belastbaren Daten- und Entscheidungsflüssen und endet erst bei nachvollziehbaren Ergebnissen im Betrieb.",
+      "Gerade in FinTech zählen nicht nur neue Features, sondern Verlässlichkeit, Sicherheit und auditierbare Entscheidungen.",
     ],
     aboutHighlights: [
-      "MSc Finance + Statistik: quantitative Modelle mit Business-Relevanz.",
-      "AI Engineering mit RAG-Fokus: nachvollziehbare Antworten statt Black-Box-Ausgaben.",
-      "Produkt- und Delivery-Blick: von der Idee bis zum verlässlichen Betrieb.",
+      "Tech: TypeScript/Next.js, APIs, Datenflüsse, Observability.",
+      "Quant: Zeitreihen- und Risiko-Logik für belastbare Decisioning-Systeme.",
+      "AI: RAG-gestützte Assistenten mit Quellen, Grenzen und Kostenkontrolle.",
     ],
     askTitle: "You can ask anything about me.",
     askSubtitle:
-      "Der Ask-Bereich nutzt RAG: Antworten werden aus Website-Inhalten abgeleitet und mit Quellen belegt.",
+      "Stell Fragen zu Projekten, Thesis, Skills oder Arbeitsweise. Antworten werden über RAG aus den Website-Inhalten zusammengesetzt.",
     askExamplePrompts: [
       "Woran hast du in Fraud/Risk konkret gearbeitet?",
-      "Welche Skills bringst du für AI Engineering mit?",
-      "Welche Thesis-Ergebnisse sind für Unternehmen relevant?",
+      "Wie würdest du eine riskante Legacy-Architektur modernisieren?",
+      "Welche Thesis-Ergebnisse sind für Business-Entscheidungen relevant?",
     ],
     ragTitle: "RAG in 3 Schritten",
     ragSteps: [
       "Frage analysieren und relevante Content-Abschnitte abrufen.",
       "Antwort aus belegten Quellen zusammenstellen.",
       "Ergebnis mit Citations und sinnvollen Next Steps ausgeben.",
+    ],
+    ragGuardrails: [
+      "Antworten basieren auf den publizierten Seiteninhalten, nicht auf freier Spekulation.",
+      "Relevante Aussagen kommen mit Quellenhinweis.",
+      "Wenn Informationen fehlen, wird das transparent benannt.",
     ],
     focusTitle: "Core Focus",
     focusAreas: [
@@ -96,41 +109,52 @@ export const LANDING_COPY: Record<
     ],
   },
   en: {
-    headline: "FinTech builder. Trust-first. Subtly bold.",
-    sub: "Premium engineering for payments, risk & AI—without the buzzword fog.",
+    headline: "Hi, I’m Markus Öffel.",
+    sub: "I build trust-critical fintech systems at the intersection of tech, quant, and AI engineering.",
+    proofChips: [
+      "MSc Finance",
+      "BSc Innovation Management",
+      "AI Engineer Core Track (LLM/RAG/Agents)",
+      "CFA Level I · August 2026",
+    ],
     trustPoints: [
-      "Trust-first architecture for regulated environments",
-      "Delivery with clear KPIs instead of buzzword roadmaps",
-      "AI only with reliable sources and cost controls",
-      "CFA Level I candidate — exam planned for August 2026",
+      "Architecture first: clear system boundaries before feature volume.",
+      "Delivery that is measurable: KPIs, SLOs, and real runbooks.",
+      "AI with evidence: RAG and citations over hallucinations.",
+      "Regulatory reality built in: privacy, auditability, and cost control.",
     ],
     aboutEyebrow: "About me",
-    aboutTitle: "Markus Öffel — Tech × Quant × AI Engineering.",
+    aboutTitle: "Senior engineer with quant and product depth.",
     aboutSubtitle:
-      "I build reliable systems for fintech, risk decisions, and production-grade AI use cases.",
+      "From fraud decisioning to KYC flows to AI assistants: I ship systems that hold up in production and stay explainable.",
     aboutParagraphs: [
-      "I’m Markus Öffel, building fintech products at the intersection of payments, risk/fraud, and AI.",
-      "My focus is clear architecture, auditable decisions, and measurable outcomes instead of raw feature volume.",
-      "With an MSc finance background and hands-on engineering practice, I ship solutions that hold up in regulated environments.",
+      "I combine technical execution, quantitative thinking, and product pragmatism into one delivery lane.",
+      "My work starts with reliable data and decision flows and ends with measurable outcomes in operations.",
+      "In fintech, the goal is not only shipping features; it is shipping systems that remain trustworthy under pressure.",
     ],
     aboutHighlights: [
-      "MSc finance and statistics foundation for quantitatively sound decisions.",
-      "AI engineering with a RAG-first approach: grounded answers over black-box output.",
-      "Product and delivery mindset: from concept to reliable operations.",
+      "Tech: TypeScript/Next.js, APIs, data flows, observability.",
+      "Quant: time-series and risk logic for decision-ready systems.",
+      "AI: RAG-based assistants with citations, boundaries, and cost discipline.",
     ],
     askTitle: "You can ask anything about me.",
     askSubtitle:
-      "The Ask section runs on RAG: answers are grounded in site content and returned with citations.",
+      "Ask about projects, thesis, skills, or how I work. Answers are composed via RAG from site content with citations.",
     askExamplePrompts: [
       "What did you build in risk/fraud projects?",
-      "Which skills are most relevant for AI engineering?",
-      "Which thesis findings are useful for business decisions?",
+      "How would you modernize a risky legacy architecture?",
+      "Which thesis findings are most relevant for business decisions?",
     ],
     ragTitle: "RAG in 3 steps",
     ragSteps: [
       "Analyze the question and retrieve relevant content chunks.",
       "Compose the answer from evidence-backed sources.",
       "Return output with citations and actionable next steps.",
+    ],
+    ragGuardrails: [
+      "Answers are grounded in published site content, not free-form speculation.",
+      "Relevant claims are returned with source references.",
+      "Missing context is explicitly called out instead of guessed.",
     ],
     focusTitle: "Core Focus",
     focusAreas: [

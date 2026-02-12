@@ -250,7 +250,7 @@ export default async function LandingPage({
                 </div>
               ))}
             </div>
-          </div>
+          </aside>
         </div>
       </section>
 

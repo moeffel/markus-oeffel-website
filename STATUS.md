@@ -8,35 +8,6 @@ Stand: 2026-02-11
 - Spezifikation in `fintech-wow-portfolio-spec/SPEC/*` ist weiterhin mit `Status: Draft` markiert.
 - Git-Repository ist initialisiert, aber ohne Commit-Historie (alles aktuell uncommitted).
 
-## Content-Integrity-Loop (2026-02-12)
-
-- Nicht verifizierte Case-Studies entfernt:
-  - `realtime-fraud-scoring`
-  - `kyc-onboarding`
-- Projects basieren jetzt auf verifizierten Inhalten:
-  - `markus-oeffel-website`
-  - `thesis`
-- Landing-/Ask-Texte auf reale Schwerpunkte umgestellt (Thesis, Zertifikate, Skills, Architektur), keine Fraud/KYC-Claims mehr.
-- Skills/Certification-Items auf Basis der verfügbaren Nachweise geschärft:
-  - Coursera Google Advanced Data Analytics (7 Kurse)
-  - DataCamp (Data Analyst in Python, Python Data Fundamentals)
-  - Udemy AI Engineer Core Track
-  - Claude Code Crash Course
-  - Value Management Module 1 & 2
-  - Seminar-Track (SCM, Projektmanagement, Präsentation/Rhetorik, Mimikscouting)
-- Öffentliche Content-Links von `fintech-wow.dev` auf `markusoeffel.com` migriert.
-
-## Fix-Loop (2026-02-12) – Profilbild
-
-- Problemursache: Profilbild war an eine optionale Env-Variable gebunden; bei fehlerhafter/alter Konfiguration konnte das Bild auf Production fehlen.
-- Fix umgesetzt:
-  - Profilbildquelle auf statische, repo-versionierte Datei umgestellt (`public/profile.png`).
-  - `ProfilePhoto` nutzt jetzt konstant `PROFILE_PHOTO_SRC = "/profile.png"` statt Runtime-Env.
-  - Landing-JSON-LD referenziert dieselbe stabile Bildquelle.
-- Doku aktualisiert:
-  - `.env.example` (Profile-Photo-Variable entfernt)
-  - `README.md` (Profilbildpfad klar auf `public/profile.png` gesetzt)
-
 ## Neuer Ausbau-Loop (2026-02-12)
 
 - Landingpage inhaltlich und visuell weiter in Richtung „About me + Ask/RAG“ ausgebaut.
@@ -398,3 +369,24 @@ Stand: 2026-02-11
 4. `scripts/smoke-api.mjs` robust machen (Timeout/Fallback für `/api/ask` Happy-Path ohne externe Modell-Dependency).
 5. Erstes Git-Baseline-Release etablieren (Commits/Tags), danach Soft-Launch.
 6. Lighthouse/A11y/Perf-Gates automatisieren (CI + Budgets) und Spec-Dokumente von `Draft` heben.
+
+## Update 2026-02-13 (Profil-Realismus + Ask/RAG-Tuning)
+
+- Claims und Positionierung auf realen Nachweisen ausgerichtet:
+  - kein `Senior`-Framing mehr
+  - kein CFA-Teaser mehr
+  - WKO-Prüfung (`gewerblicher Vermögensberater`) als abgeschlossene Qualifikation geführt
+  - Studienschwerpunkte (MSc/BSc) und Zertifikate stärker in Skills/Experience gespiegelt
+- Landing überarbeitet:
+  - größere About-Me-Fläche mit eingebettetem Profilbild
+  - Profilbild-Komponente auf rechteckiges Rendering umgestellt (nicht rund)
+  - dynamischere Panels/Bewegungseffekte in `globals.css`
+- Fake-/Demo-Case-Content entfernt und durch realitätsnahe Cases ersetzt:
+  - Fokus auf Thesis, Website-Build und aktuelles Financing/Analytics/AI-Taskforce-Profil
+- Ask/RAG low-cost gehärtet:
+  - Standardmäßig ohne kostenpflichtige LLM-/Vector-Pfade (`ASK_ENABLE_LLM=0`, `ASK_ENABLE_VECTOR_RAG=0`)
+  - Retrieval/Ranking in `src/lib/ask/answer.ts` deutlich erweitert (Intent-Erkennung, Skill/Thesis-Boosts, Diversifikation)
+  - Ask-Prompts/Suggested Queries auf reale Profilfragen umgestellt
+- Playwright-Livecheck gegen `markusoeffel.com` durchgeführt:
+  - aktueller Live-Stand zeigt noch alte Inhalte (u. a. CFA-Teaser, ältere Ask-Prompts)
+  - diese Änderungen liegen lokal vor und werden mit dem nächsten Push/Deploy sichtbar

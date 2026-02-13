@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { ProfilePhoto, PROFILE_PHOTO_SRC } from "@/components/profile-photo";
+import { ProfilePhoto } from "@/components/profile-photo";
 import { JsonLd } from "@/components/json-ld";
 import { AskClient } from "@/app/[lang]/ask/ask-client";
 import { getSiteSettings } from "@/lib/content";
@@ -32,7 +32,7 @@ export default async function LandingPage({
   const c = LANDING_COPY[lang];
   const settings = await getSiteSettings();
   const siteUrl = getSiteUrl();
-  const profilePhotoSrc = PROFILE_PHOTO_SRC;
+  const profilePhotoSrc = process.env.NEXT_PUBLIC_PROFILE_PHOTO ?? "/profile-placeholder.svg";
   const profilePhotoUrl =
     profilePhotoSrc.startsWith("http://") || profilePhotoSrc.startsWith("https://")
       ? profilePhotoSrc
@@ -73,7 +73,7 @@ export default async function LandingPage({
   return (
     <div className="space-y-10 rise-in">
       <JsonLd data={jsonLd} />
-      <section className="cyber-grid surface-card relative overflow-hidden rounded-3xl px-6 py-8 sm:px-10 sm:py-10">
+      <section className="aurora-panel dynamic-border lift-hover cyber-grid surface-card relative overflow-hidden rounded-3xl px-6 py-8 sm:px-10 sm:py-10">
         <div className="pointer-events-none absolute -right-28 -top-28 h-72 w-72 rounded-full bg-[radial-gradient(circle_at_center,rgba(93,217,255,0.22),transparent_70%)]" />
         <div className="pointer-events-none absolute -bottom-36 -left-36 h-80 w-80 rounded-full bg-[radial-gradient(circle_at_center,rgba(226,107,255,0.18),transparent_68%)]" />
         <div className="relative grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
@@ -145,9 +145,15 @@ export default async function LandingPage({
             </div>
           </div>
 
-          <aside className="surface-card rounded-3xl p-5 sm:p-6">
+          <aside className="orbit-float dynamic-border surface-card rounded-3xl p-5 sm:p-6">
             <div className="mx-auto w-fit">
-              <ProfilePhoto alt="Markus Öffel portrait" size={300} className="finance-ring" priority />
+              <ProfilePhoto
+                alt="Markus Öffel portrait"
+                width={320}
+                height={420}
+                className="finance-ring"
+                priority
+              />
             </div>
             <p className="mt-5 text-xs font-medium tracking-[0.14em] text-foreground/55 uppercase">
               {c.aboutEyebrow}
@@ -183,7 +189,7 @@ export default async function LandingPage({
         </div>
       </section>
 
-      <section className="surface-card cyber-grid relative overflow-hidden rounded-3xl p-6 sm:p-8">
+      <section className="aurora-panel dynamic-border lift-hover surface-card cyber-grid relative overflow-hidden rounded-3xl p-6 sm:p-8">
         <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-[radial-gradient(circle_at_center,rgba(226,107,255,0.17),transparent_70%)]" />
         <div className="relative grid gap-8 lg:grid-cols-[1.35fr_1fr] lg:items-start">
           <div>
@@ -254,7 +260,7 @@ export default async function LandingPage({
         </div>
       </section>
 
-      <section className="surface-card cyber-grid rounded-3xl p-6 sm:p-8">
+      <section className="aurora-panel dynamic-border lift-hover surface-card cyber-grid rounded-3xl p-6 sm:p-8">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-medium tracking-[0.14em] text-foreground/55 uppercase">
@@ -327,7 +333,7 @@ export default async function LandingPage({
         </div>
       </section>
 
-      <section className="surface-card rounded-3xl p-6 sm:p-8">
+      <section className="dynamic-border lift-hover surface-card rounded-3xl p-6 sm:p-8">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-medium tracking-[0.14em] text-foreground/55 uppercase">

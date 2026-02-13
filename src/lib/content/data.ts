@@ -24,14 +24,14 @@ const caseStudies = z.array(caseStudySchema).parse([
       en: "Markus Öffel's Website",
     },
     subtitle: {
-      de: "Persönliche Website mit RAG- und Case-System",
-      en: "Personal website with RAG and case system",
+      de: "Persönliche Website mit Case-Engine",
+      en: "Personal website with case engine",
     },
     summary: {
-      de: "Mehrsprachige persönliche Website mit strukturierten Projekt-Dossiers, Ask-/Contact-Flows und deploy-fähigem QA-Setup.",
-      en: "Bilingual personal website with structured project dossiers, ask/contact flows, and deployment-ready QA setup.",
+      de: "Mehrsprachige persönliche Website mit strukturierten Case-Studies, Ask-/Contact-Flows und deploy-fähigem QA-Setup.",
+      en: "Bilingual personal website with structured case studies, ask/contact flows, and deployment-ready QA setup.",
     },
-    tags: ["portfolio", "nextjs", "i18n", "rag", "playwright", "deploy"],
+    tags: ["portfolio", "nextjs", "i18n", "playwright", "deploy"],
     domains: ["ai", "data", "infra", "other"],
     highlightMetrics: [
       { label: { de: "Sprachen", en: "Locales" }, value: "2 (DE/EN)" },
@@ -40,8 +40,8 @@ const caseStudies = z.array(caseStudySchema).parse([
         value: "11+ smoke-checked",
       },
       {
-        label: { de: "Nachweise", en: "Evidence files" },
-        value: "8 certificate PDFs",
+        label: { de: "Deploy Checks", en: "Deploy checks" },
+        value: "17 readiness gates",
       },
     ],
     stack: [
@@ -68,15 +68,15 @@ const caseStudies = z.array(caseStudySchema).parse([
       },
     ],
     published: true,
-    order: 1,
-    date: "2026-02-12",
+    order: 2,
+    date: "2026-02-11",
     context: {
-      de: "Die Website bündelt Werdegang, Masterarbeit, Zertifikate und Arbeitsweise in einer belastbaren, nachweisorientierten Struktur.",
-      en: "The website consolidates background, thesis work, certifications, and delivery style in one evidence-oriented structure.",
+      de: "Die Website dient als zentrale Trust-Fläche für FinTech-, Data- und AI-Projekte inklusive rechtlicher, technischer und inhaltlicher Baseline.",
+      en: "The website acts as a central trust surface for fintech, data, and AI work with legal, technical, and content baselines.",
     },
     problem: {
       de: "Vorher fehlte ein konsistenter öffentlicher Auftritt mit nachvollziehbaren Projektdetails, Zertifikatsnachweisen und klarer Kontaktführung.",
-      en: "Previously, there was no consistent public profile with traceable project detail, certification evidence, and clear contact routing.",
+      en: "Previously there was no consistent public presence with traceable project details, certification evidence, and clear contact routing.",
     },
     solution: {
       de: [
@@ -135,6 +135,103 @@ const caseStudies = z.array(caseStudySchema).parse([
       en: [
         "A strong portfolio is a product and needs the same quality bar as client software.",
         "Legal text, content model, and technical QA should be designed together from the start.",
+      ],
+    },
+    confidentialityLevel: "public",
+  },
+  {
+    slug: "financing-analytics-ai-taskforce",
+    title: {
+      de: "Financing Analytics & AI Taskforce",
+      en: "Financing analytics & AI taskforce",
+    },
+    subtitle: {
+      de: "Product Owner in der Finanzierungs-Squad",
+      en: "Product owner in the financing squad",
+    },
+    summary: {
+      de: "Praxisprojekt aus der aktuellen Rolle: Vertriebs- und Finanzierungsdaten für Management-Entscheidungen strukturieren und erste AI-Automationen evaluieren.",
+      en: "Practice-driven work from the current role: structure sales and financing data for management decisions and evaluate first AI automation use cases.",
+    },
+    tags: ["financing", "analytics", "product", "ai"],
+    domains: ["investment", "payments", "data", "ai"],
+    highlightMetrics: [
+      { label: { de: "Rolle", en: "Role" }, value: "Product Owner" },
+      {
+        label: { de: "Fokus", en: "Focus" },
+        value: "Forecasts + AI use cases",
+      },
+    ],
+    stack: ["Python", "SQL", "Excel", "Prompt Engineering"],
+    links: [
+      { label: "Discuss project context", url: "https://markusoeffel.com/en/contact" },
+    ],
+    published: true,
+    order: 1,
+    date: "2025-07-01",
+    context: {
+      de: "Finanzierungsnahe Produktarbeit im regulierten Umfeld mit hoher Relevanz für Sales-Steuerung und Entscheidungsqualität.",
+      en: "Financing-focused product work in a regulated environment with direct relevance for sales steering and decision quality.",
+    },
+    problem: {
+      de: "Datenquellen, Stakeholder-Perspektiven und operative Prioritäten mussten in einen klaren Entscheidungsprozess überführt werden.",
+      en: "Data sources, stakeholder perspectives, and operational priorities had to be aligned into one clear decision process.",
+    },
+    solution: {
+      de: [
+        "Sales- und Finanzierungsdaten in wiederverwendbare Reporting-Strukturen überführt.",
+        "Forecast-orientierte Entscheidungsunterlagen für Management und Fachseite aufgebaut.",
+        "Erste AI-/Automations-Ideen mit Fokus auf realen Arbeitsabläufen statt Demo-Effekten getestet.",
+      ],
+      en: [
+        "Converted sales and financing data into reusable reporting structures.",
+        "Built forecast-oriented decision documents for management and business teams.",
+        "Tested first AI/automation ideas focused on real workflows rather than demo effects.",
+      ],
+    },
+    constraints: {
+      de: [
+        "Regulatorischer Rahmen und sensible Finanzdaten.",
+        "Abstimmung zwischen Beratung, Business und IT.",
+        "Nur umsetzbare Lösungen mit klarem operativem Nutzen.",
+      ],
+      en: [
+        "Regulatory constraints and sensitive finance data.",
+        "Alignment across advisory, business, and IT teams.",
+        "Only practical solutions with clear operational value.",
+      ],
+    },
+    architecture: {
+      type: "text",
+      payload: {
+        de: "Datenquellen → Bereinigung/Analyse → Forecast-Packs → Entscheidungs- und Umsetzungsloop mit Squad und Stakeholdern.",
+        en: "Data sources → cleaning/analysis → forecast packs → decision and execution loop with squad and stakeholders.",
+      },
+    },
+    yourRole: {
+      de: ["Product Owner", "Stakeholder Alignment", "Analytics Delivery"],
+      en: ["Product owner", "Stakeholder alignment", "Analytics delivery"],
+    },
+    impact: {
+      de: [
+        { text: "Klarere Entscheidungsgrundlagen für Priorisierung und Umsetzung.", qualitative: true },
+        { text: "Bessere Verbindung zwischen Datenanalyse und operativer Steuerung.", qualitative: true },
+        { text: "AI-Themen in kontrollierten, business-nahen Schritten gestartet.", qualitative: true },
+      ],
+      en: [
+        { text: "Clearer decision inputs for prioritization and execution.", qualitative: true },
+        { text: "Stronger link between analytics output and operational steering.", qualitative: true },
+        { text: "AI topics started in controlled, business-adjacent increments.", qualitative: true },
+      ],
+    },
+    learnings: {
+      de: [
+        "Der größte Hebel entsteht, wenn Datenarbeit und Delivery-Rhythmus zusammen gedacht werden.",
+        "AI-Wert zeigt sich zuerst in kleinen, belastbaren Workflow-Verbesserungen.",
+      ],
+      en: [
+        "The biggest leverage comes from combining data work with delivery cadence.",
+        "AI value appears first in small, reliable workflow improvements.",
       ],
     },
     confidentialityLevel: "public",
@@ -503,6 +600,13 @@ const skillCategories = z.array(skillCategorySchema).parse([
         },
       },
       {
+        name: "Monte Carlo",
+        note: {
+          de: "Szenario-Simulation für Risiko- und Entscheidungsräume",
+          en: "Scenario simulation for risk and decision spaces",
+        },
+      },
+      {
         name: "Business Math & Statistics",
         note: {
           de: "Masterkurs Wirtschaftsmathematik und Statistik (Uni Graz)",
@@ -517,43 +621,43 @@ const skillCategories = z.array(skillCategorySchema).parse([
       {
         name: "Corporate Finance",
         note: {
-          de: "Fachprüfung + Seminar Corporate Finance (Uni Graz)",
-          en: "Corporate finance exam and seminar track (University of Graz)",
+          de: "DCF (WACC/APV), Multiples (EV/EBITDA, P/E)",
+          en: "DCF (WACC/APV), multiples (EV/EBITDA, P/E)",
         },
       },
       {
-        name: "Investment Analysis",
-        note: {
-          de: "Finanzmarktanalyse, Investitionsmanagement und Investmentanalyse 1/2",
-          en: "Financial market analysis, investment management, and investment analysis 1/2",
-        },
-      },
-      {
-        name: "Mortgage & Credit Topics",
+        name: "Mortgage & Credit Risk",
         note: {
           de: "Zins-Szenarien, Kreditprüfung, Entscheidungsunterlagen",
           en: "Rate scenarios, credit-risk analysis, decision templates",
         },
       },
       {
-        name: "Market & Volatility Analytics",
+        name: "Market Analytics",
         note: {
           de: "Kapitalmärkte, Krypto-Volatilität, makroökonomischer Kontext",
           en: "Capital markets, crypto volatility, macro context",
         },
       },
       {
-        name: "Decision Support Communication",
+        name: "Academic Finance Track",
         note: {
-          de: "Management-Reporting und klare Entscheidungskommunikation im Finanzkontext",
-          en: "Management reporting and decision communication in finance contexts",
+          de: "Finance Management, Financial Market Analysis, Investment Analysis, Corporate-Finance-Seminare",
+          en: "Finance management, financial market analysis, investment analysis, and corporate-finance seminars",
         },
       },
       {
-        name: "CFA Level I Candidate",
+        name: "Risk Communication",
         note: {
-          de: "Prüfung geplant für August 2026",
-          en: "Exam planned for August 2026",
+          de: "Management-Reporting und klare Entscheidungskommunikation",
+          en: "Management reporting and clear decision communication",
+        },
+      },
+      {
+        name: "Commercial Asset Advisor (WKO)",
+        note: {
+          de: "Prüfung zum gewerblichen Vermögensberater abgelegt (Wirtschaftskammer Wien, 2024).",
+          en: "Completed the commercial asset advisor exam (Vienna Chamber of Commerce, 2024).",
         },
       },
     ],
@@ -576,17 +680,10 @@ const skillCategories = z.array(skillCategorySchema).parse([
         },
       },
       {
-        name: "Applied Data Analytics",
-        note: {
-          de: "Google Advanced Data Analytics (7 Kurse): Statistik, Regression, ML und Capstone",
-          en: "Google Advanced Data Analytics (7 courses): statistics, regression, ML, and capstone",
-        },
-      },
-      {
         name: "AI Prototyping",
         note: {
-          de: "LLM Engineering, RAG, QLoRA und Agents (Udemy Core Track)",
-          en: "LLM engineering, RAG, QLoRA, and agents (Udemy core track)",
+          de: "Prompt Engineering, Google AI Studio, Automations-Ideen",
+          en: "Prompt engineering, Google AI Studio, automation concepts",
         },
       },
       {
@@ -649,13 +746,6 @@ const skillCategories = z.array(skillCategorySchema).parse([
         },
       },
       {
-        name: "Claude Code Crash Course",
-        note: {
-          de: "Claude Code In a Day · 8,5h · abgeschlossen am 29. Januar 2026",
-          en: "Claude Code In a Day · 8.5h · completed on January 29, 2026",
-        },
-      },
-      {
         name: "Google Advanced Data Analytics",
         note: {
           de: "Coursera Professional Certificate (7 Kurse) · abgeschlossen am 14. Februar 2025",
@@ -691,10 +781,17 @@ const skillCategories = z.array(skillCategorySchema).parse([
         },
       },
       {
+        name: "Claude Code Training",
+        note: {
+          de: "Agentic Coding Workflows, Terminal-Automation und iterative Delivery",
+          en: "Agentic coding workflows, terminal automation, and iterative delivery",
+        },
+      },
+      {
         name: "Seminar Track",
         note: {
-          de: "Supply Chain Management (50 LE), Projektmanagement (50 LE), Präsentation & Rhetorik (8 LE), Mimikscouting (16 LE)",
-          en: "Supply chain management (50 units), project management (50 units), presentation & rhetoric (8 units), and mimic scouting (16 units)",
+          de: "Leadership, Supply Chain Management, Projektmanagement, Präsentation & Rhetorik",
+          en: "Leadership, supply chain management, project management, presentation & rhetoric",
         },
       },
     ],

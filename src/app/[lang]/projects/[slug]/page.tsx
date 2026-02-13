@@ -18,7 +18,7 @@ const DOMAIN_LABELS: Record<Language, Record<Domain, string>> = {
   de: {
     payments: "Payments",
     risk: "Risk",
-    kyc: "Compliance",
+    kyc: "KYC/AML",
     ai: "AI",
     data: "Data",
     infra: "Infra",
@@ -28,7 +28,7 @@ const DOMAIN_LABELS: Record<Language, Record<Domain, string>> = {
   en: {
     payments: "Payments",
     risk: "Risk",
-    kyc: "Compliance",
+    kyc: "KYC/AML",
     ai: "AI",
     data: "Data",
     infra: "Infra",

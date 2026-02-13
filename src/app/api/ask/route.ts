@@ -21,6 +21,14 @@ function parsePositiveInt(value: string | undefined): number | null {
   return n;
 }
 
+function parseBooleanEnv(value: string | undefined, defaultValue: boolean): boolean {
+  if (!value) return defaultValue;
+  const normalized = value.trim().toLowerCase();
+  if (["1", "true", "yes", "on"].includes(normalized)) return true;
+  if (["0", "false", "no", "off"].includes(normalized)) return false;
+  return defaultValue;
+}
+
 function getAskDailyLimit(): number | null {
   const explicit = parsePositiveInt(process.env.ASK_DAILY_LIMIT);
   if (explicit) return explicit;
@@ -64,10 +72,13 @@ export async function POST(request: Request) {
   }
 
   const hasOpenAiKey = Boolean(process.env.OPENAI_API_KEY);
+  const llmEnabled = parseBooleanEnv(process.env.ASK_ENABLE_LLM, false);
+  const vectorEnabled = parseBooleanEnv(process.env.ASK_ENABLE_VECTOR_RAG, false);
+  const useLlm = hasOpenAiKey && llmEnabled;
   const hasDbUrl = Boolean(process.env.SUPABASE_DB_URL || process.env.DATABASE_URL);
-  const vectorRagReady = hasOpenAiKey && hasDbUrl;
+  const vectorRagReady = useLlm && vectorEnabled && hasDbUrl;
 
-  if (hasOpenAiKey) {
+  if (useLlm) {
     const dailyLimit = getAskDailyLimit();
     if (dailyLimit) {
       const keyBase = parsed.data.session_id
@@ -96,7 +107,7 @@ export async function POST(request: Request) {
 
   try {
     const fallback = async () =>
-      hasOpenAiKey
+      useLlm
         ? await answerFromCorpusWithLlm({
             query: parsed.data.query,
             lang: parsed.data.lang,
@@ -123,7 +134,7 @@ export async function POST(request: Request) {
     if (vectorRagReady) {
       console.error("[ask] rag failed; falling back.", { ip, err });
       try {
-        const result = hasOpenAiKey
+        const result = useLlm
           ? await answerFromCorpusWithLlm({
               query: parsed.data.query,
               lang: parsed.data.lang,

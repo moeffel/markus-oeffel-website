@@ -6,7 +6,7 @@ Bilingual (DE/EN) personal website built with Next.js App Router.
 
 - **CMS-driven content** via Sanity (private dataset) with Draft/Preview + publish webhooks.
 - **Contact form** via Resend + Cloudflare Turnstile + distributed rate limiting (Upstash).
-- **AI Assistant (“Ask”)**: RAG-only answers with citations (Supabase Postgres + pgvector + OpenAI).
+- **AI Assistant (“Ask”)**: low-cost lexical RAG by default, optional vector+LLM mode with citations (Supabase Postgres + pgvector + OpenAI).
 - **SEO**: canonical + hreflang, sitemap/robots, template OG images, JSON-LD.
 - **Security**: nonce-based CSP (prod), HSTS (prod), webhook HMAC auth, PII-redacted logging.
 
@@ -27,7 +27,7 @@ cp .env.example .env.local
 Notes:
 - The site runs without most env vars (falls back to local placeholder content and disables captcha verification in dev).
 - For production/staging you should set all required env vars.
-- Landing-page profile photo is loaded from `public/profile.png`.
+- The default landing photo path is `public/profile.jpeg` (`NEXT_PUBLIC_PROFILE_PHOTO=/profile.jpeg`).
 
 3. Run dev server:
 
@@ -66,6 +66,11 @@ Body can include `{ type/documentType, slug }` (or explicit `paths: string[]`).
 `POST /api/reindex` with the same HMAC signature scheme.
 
 ## RAG (Ask)
+
+- Default mode is low-cost/local (`ASK_ENABLE_LLM=0`, `ASK_ENABLE_VECTOR_RAG=0`).
+- Enable paid mode only when needed:
+  - `ASK_ENABLE_LLM=1` to allow LLM answer generation.
+  - `ASK_ENABLE_VECTOR_RAG=1` (plus DB + OpenAI key) to enable vector retrieval.
 
 ### Database
 

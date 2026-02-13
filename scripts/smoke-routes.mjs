@@ -53,8 +53,13 @@ async function checkCorePages() {
     },
     {
       journey: "J1",
-      path: "/en/projects/markus-oeffel-website",
-      mustContain: ["Markus Öffel's Website", "Context", "Problem", "Impact"],
+      path: "/en/projects/financing-analytics-ai-taskforce",
+      mustContain: [
+        "Financing analytics & AI taskforce",
+        "Context",
+        "Problem",
+        "Impact",
+      ],
     },
     {
       journey: "J2",

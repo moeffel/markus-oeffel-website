@@ -32,13 +32,13 @@ type AskStreamEvent =
 const SUGGESTED_QUERIES: Record<Language, string[]> = {
   de: [
     "Welche Skills kommen direkt aus deinen Zertifikaten?",
-    "Wie ist dein Architektur-Ansatz für Analytics- und AI-Produkte?",
-    "Worum ging es in deiner Masterarbeit?",
+    "Wie war das Setup deiner ARIMA-GARCH-Masterarbeit?",
+    "Was machst du als Product Owner im Finanzierungsbereich?",
   ],
   en: [
     "Which skills come directly from your certificates?",
-    "What is your architecture approach for analytics and AI products?",
-    "What was your thesis about?",
+    "How was your ARIMA-GARCH thesis setup?",
+    "What do you do as a product owner in financing?",
   ],
 };
 
@@ -56,7 +56,7 @@ export function AskClient({
   >([]);
 
   const [answerMarkdown, setAnswerMarkdown] = useState("");
-  const [showCitations, setShowCitations] = useState(variant === "page");
+  const [showCitations, setShowCitations] = useState(true);
 
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
   const [captchaToken, setCaptchaToken] = useState("");
@@ -326,7 +326,9 @@ export function AskClient({
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-medium text-foreground/70">Citations</p>
+              <p className="text-xs font-medium text-foreground/70">
+                Citations ({state.data.citations.length})
+              </p>
               {variant === "embed" ? (
                 <button
                   type="button"

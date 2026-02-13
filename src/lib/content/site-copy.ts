@@ -42,40 +42,40 @@ export const LANDING_COPY: Record<
 > = {
   de: {
     headline: "Hi, ich bin Markus Öffel.",
-    sub: "Ich arbeite an Finance-, Data- und AI-Produkten an der Schnittstelle von Tech, Quant und Umsetzung.",
+    sub: "Ich arbeite an FinTech-, Quant- und AI-Projekten mit Fokus auf nachvollziehbare Modelle, klare Datenflüsse und reale Umsetzbarkeit.",
     proofChips: [
       "MSc Finance",
       "BSc Innovationsmanagement",
-      "Google Advanced Data Analytics (Coursera)",
-      "CFA Level I · August 2026",
+      "Google Advanced Data Analytics",
+      "Gewerblicher Vermögensberater (WKO-Prüfung)",
     ],
     trustPoints: [
-      "Methodisch arbeiten: erst Hypothesen, Datenqualität und klare Modellannahmen.",
-      "Messbar liefern: reproduzierbare Auswertungen statt Buzzword-Roadmaps.",
+      "Architektur zuerst: erst klare Systemgrenzen, dann Features.",
+      "Messbar liefern: KPIs, SLOs und saubere Runbooks statt Roadmap-Show.",
       "AI mit Belegen: RAG + Citations statt Halluzinationen.",
-      "Praxisbezug: Theorie, Zertifikate und reale Umsetzung in einem Portfolio verbunden.",
+      "Regulatorische Realität: Datenschutz, Auditability und Kostenkontrolle von Anfang an.",
     ],
     aboutEyebrow: "Über mich",
-    aboutTitle: "Finance-, Data- und AI-Builder mit Produktblick.",
+    aboutTitle: "MSc Finance mit Tech-, Quant- und Delivery-Fokus.",
     aboutSubtitle:
-      "Von Zeitreihen- und Risikomodellen bis zu RAG-Assistenz: ich baue verständliche, belastbare Lösungen.",
+      "Ich kombiniere Finance-Ausbildung, Datenanalyse und praktische Produktarbeit in einem klaren Umsetzungsstil.",
     aboutParagraphs: [
-      "Ich verbinde technische Umsetzung, quantitative Denkweise und Produktfokus zu einer klaren Delivery-Linie.",
-      "Meine Arbeit startet bei belastbaren Daten- und Entscheidungsflüssen und endet erst bei nachvollziehbaren Ergebnissen im Betrieb.",
-      "Gerade in FinTech zählen nicht nur neue Features, sondern Verlässlichkeit, Sicherheit und auditierbare Entscheidungen.",
+      "Aktuell arbeite ich als Product Owner im Finanzierungsumfeld und in einer internen AI-Taskforce.",
+      "Mein fachlicher Kern ist Finance + Analytics: von Datenaufbereitung und Zeitreihenlogik bis zu management-tauglichen Entscheidungen.",
+      "Meine Masterarbeit fokussiert ARIMA-GARCH, Rolling Backtests und VaR-Bewertung für Krypto-Märkte.",
     ],
     aboutHighlights: [
-      "Tech: TypeScript/Next.js, APIs, Datenflüsse, QA- und Deploy-Checks.",
-      "Quant: ARIMA/GARCH, Forecast-Evaluation und VaR-Backtesting.",
-      "AI: RAG-gestützte Assistenten mit Quellen, Grenzen und Kostenkontrolle.",
+      "Finance: Corporate Finance, Investments, Risikobeurteilung, Zins- und Szenariologik.",
+      "Quant/Data: Zeitreihen, Volatilitätsmodelle, Backtesting, Statistik, SQL/Python.",
+      "AI/Delivery: RAG-Grundlagen, Prompt-Workflows, nutzbare Business-Prototypen.",
     ],
     askTitle: "You can ask anything about me.",
     askSubtitle:
       "Stell Fragen zu Projekten, Thesis, Skills oder Arbeitsweise. Antworten werden über RAG aus den Website-Inhalten zusammengesetzt.",
     askExamplePrompts: [
-      "Welche Methoden nutzt du in deiner ARIMA-GARCH-Masterarbeit?",
-      "Welche Skills kommen aus deinen Zertifikaten?",
-      "Wie würdest du ein AI-Feature produktionsnah aufsetzen?",
+      "Welche Skills kommen direkt aus MSc, BSc und Zertifikaten?",
+      "Wie bist du methodisch in der Masterarbeit vorgegangen?",
+      "Welche Themen deckt die WKO-Prüfung zum Vermögensberater ab?",
     ],
     ragTitle: "RAG in 3 Schritten",
     ragSteps: [
@@ -95,7 +95,7 @@ export const LANDING_COPY: Record<
         note: "Next.js, TypeScript, APIs, observability, deployment quality.",
       },
       {
-        title: "Quant & Analytics",
+        title: "Quant & Risk",
         note: "Zeitreihen, Volatilität, Backtesting, decision-ready metrics.",
       },
       {
@@ -110,40 +110,40 @@ export const LANDING_COPY: Record<
   },
   en: {
     headline: "Hi, I’m Markus Öffel.",
-    sub: "I work on finance, data, and AI products at the intersection of engineering, quant methods, and delivery.",
+    sub: "I work on fintech, quant, and AI projects with a focus on transparent models, clean data flows, and practical delivery.",
     proofChips: [
       "MSc Finance",
       "BSc Innovation Management",
-      "Google Advanced Data Analytics (Coursera)",
-      "CFA Level I · August 2026",
+      "Google Advanced Data Analytics",
+      "Commercial Asset Advisor Exam (WKO)",
     ],
     trustPoints: [
-      "Method-first execution: hypotheses, data quality, and explicit model assumptions.",
-      "Measurable delivery: reproducible analysis over buzzword roadmaps.",
+      "Architecture first: clear system boundaries before feature volume.",
+      "Delivery that is measurable: KPIs, SLOs, and real runbooks.",
       "AI with evidence: RAG and citations over hallucinations.",
-      "Practical profile: study track, certificates, and shipped implementation in one place.",
+      "Regulatory reality built in: privacy, auditability, and cost control.",
     ],
     aboutEyebrow: "About me",
-    aboutTitle: "Finance, data, and AI builder with product depth.",
+    aboutTitle: "MSc finance profile with tech and quant focus.",
     aboutSubtitle:
-      "From time-series and risk modeling to RAG assistants: I build systems that stay understandable and useful.",
+      "I combine finance education, data analysis, and practical product work in one delivery style.",
     aboutParagraphs: [
-      "I combine technical execution, quantitative thinking, and product pragmatism into one delivery lane.",
-      "My work starts with reliable data and decision flows and ends with measurable outcomes in operations.",
-      "In fintech, the goal is not only shipping features; it is shipping systems that remain trustworthy under pressure.",
+      "I currently work as a product owner in financing and contribute to an internal AI taskforce.",
+      "My core is finance + analytics: from data preparation and time-series logic to management-ready decisions.",
+      "My master’s thesis focuses on ARIMA-GARCH, rolling backtests, and VaR evaluation in crypto markets.",
     ],
     aboutHighlights: [
-      "Tech: TypeScript/Next.js, APIs, data flows, QA and deployment checks.",
-      "Quant: ARIMA/GARCH, forecast evaluation, and VaR backtesting.",
-      "AI: RAG-based assistants with citations, boundaries, and cost discipline.",
+      "Finance: corporate finance, investments, risk framing, and rate scenario logic.",
+      "Quant/Data: time series, volatility models, backtesting, statistics, SQL/Python.",
+      "AI/Delivery: RAG basics, prompt workflows, and practical business prototypes.",
     ],
     askTitle: "You can ask anything about me.",
     askSubtitle:
       "Ask about projects, thesis, skills, or how I work. Answers are composed via RAG from site content with citations.",
     askExamplePrompts: [
-      "Which methods did you use in your ARIMA-GARCH thesis?",
-      "Which skills come directly from your certificates?",
-      "How would you move an AI feature toward production?",
+      "Which skills come directly from your MSc, BSc, and certificates?",
+      "What was your thesis method step by step?",
+      "What does the commercial asset advisor exam cover?",
     ],
     ragTitle: "RAG in 3 steps",
     ragSteps: [
@@ -163,7 +163,7 @@ export const LANDING_COPY: Record<
         note: "Next.js, TypeScript, APIs, observability, deployment quality.",
       },
       {
-        title: "Quant & Analytics",
+        title: "Quant & Risk",
         note: "Time series, volatility, backtesting, decision-ready metrics.",
       },
       {

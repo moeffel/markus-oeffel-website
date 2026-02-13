@@ -34,6 +34,8 @@ Konkrete Belegung der Vercel-Umgebungen (Preview/Staging vs Production) inkl. Re
 | `NEXT_PUBLIC_PLAUSIBLE_DOMAIN` | `<staging-domain>` oder leer | `<prod-domain>` oder leer |
 | `OPENAI_API_KEY` | `<openai-key>` | `<openai-key>` |
 | `SUPABASE_DB_URL` oder `DATABASE_URL` | `<db-url>` | `<db-url>` |
+| `ASK_ENABLE_LLM` | `0` (empfohlen für Low-Cost Staging) | `0` oder `1` |
+| `ASK_ENABLE_VECTOR_RAG` | `0` | `0` oder `1` |
 | `UPSTASH_REDIS_REST_URL` | `<upstash-url>` | `<upstash-url>` |
 | `UPSTASH_REDIS_REST_TOKEN` | `<upstash-token>` | `<upstash-token>` |
 | `SANITY_PROJECT_ID` | `<sanity-project>` | `<sanity-project>` |

@@ -16,8 +16,8 @@ export async function ragAnswer(input: {
   if (!ctx || ctx.chunks.length === 0) {
     const answer =
       input.lang === "de"
-        ? "Ich kann nur aus diesem Portfolio beantworten. Probier eine Frage zu Projekten, Thesis, Zertifikaten, Skills oder Architektur."
-        : "I can only answer from this portfolio. Try a question about projects, the thesis, certificates, skills, or architecture.";
+        ? "Ich kann nur aus diesem Portfolio beantworten. Frag z. B. zu Masterarbeit, Studieninhalten, Zertifikaten oder Projekten."
+        : "I can only answer from this portfolio. Try asking about the thesis, degree content, certificates, or projects.";
     return {
       answer,
       citations: [],

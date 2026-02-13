@@ -28,21 +28,274 @@ function clamp(text: string, maxChars: number): string {
   return `${clean.slice(0, Math.max(0, maxChars - 1))}…`;
 }
 
-function toTokens(text: string): string[] {
-  return text
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}]+/gu, " ")
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
+const STOPWORDS = new Set([
+  "a",
+  "an",
+  "and",
+  "are",
+  "as",
+  "at",
+  "be",
+  "by",
+  "for",
+  "from",
+  "how",
+  "i",
+  "in",
+  "is",
+  "it",
+  "me",
+  "my",
+  "of",
+  "on",
+  "or",
+  "that",
+  "the",
+  "to",
+  "was",
+  "what",
+  "which",
+  "with",
+  "zu",
+  "der",
+  "die",
+  "das",
+  "ein",
+  "eine",
+  "und",
+  "oder",
+  "mit",
+  "von",
+  "im",
+  "auf",
+  "für",
+  "wie",
+  "dein",
+  "deine",
+  "deinen",
+  "du",
+  "ich",
+  "about",
+  "your",
+]);
+
+type QueryIntent = {
+  skills: boolean;
+  thesis: boolean;
+  website: boolean;
+  rag: boolean;
+  profile: boolean;
+  stepByStep: boolean;
+  contact: boolean;
+  legal: boolean;
+};
+
+function normalize(input: string): string {
+  return input.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
 }
 
-function lexicalHitRate(queryTokens: string[], text: string): number {
+function toTokens(text: string): string[] {
+  return normalize(text)
+    .split(/\s+/)
+    .filter((token) => token.length >= 2 && !STOPWORDS.has(token));
+}
+
+function hasPrefixMatch(token: string, candidates: readonly string[]): boolean {
+  return candidates.some(
+    (candidate) =>
+      candidate.startsWith(token) ||
+      token.startsWith(candidate),
+  );
+}
+
+function lexicalHitRate(queryTokens: readonly string[], text: string): number {
   if (queryTokens.length === 0) return 0;
-  const chunkSet = new Set(toTokens(text));
+  const chunkTokens = toTokens(text);
+  if (chunkTokens.length === 0) return 0;
+  const chunkSet = new Set(chunkTokens);
   let hits = 0;
-  for (const t of queryTokens) if (chunkSet.has(t)) hits += 1;
+  for (const token of queryTokens) {
+    if (chunkSet.has(token) || hasPrefixMatch(token, chunkTokens)) hits += 1;
+  }
   return hits / queryTokens.length;
+}
+
+function lexicalCoverage(queryTokens: readonly string[], text: string): number {
+  if (queryTokens.length === 0) return 0;
+  const normalized = normalize(text);
+  let covered = 0;
+  for (const token of queryTokens) {
+    if (normalized.includes(token)) covered += 1;
+  }
+  return covered / queryTokens.length;
+}
+
+function parseQueryIntent(input: {
+  query: string;
+  queryTokens: readonly string[];
+}): QueryIntent {
+  const normalizedQuery = normalize(input.query);
+  const hasToken = (tokens: readonly string[]) =>
+    tokens.some((token) => input.queryTokens.includes(token));
+  const hasPhrase = (phrases: readonly string[]) =>
+    phrases.some((phrase) => normalizedQuery.includes(phrase));
+
+  const skills =
+    hasToken([
+      "skill",
+      "skills",
+      "zertifikat",
+      "zertifikate",
+      "certificate",
+      "certification",
+      "msc",
+      "bsc",
+      "degree",
+      "abschluss",
+      "prüfung",
+      "wko",
+    ]) ||
+    hasPhrase([
+      "commercial asset advisor",
+      "vermögensberater",
+      "google advanced data analytics",
+    ]);
+
+  const thesis =
+    hasToken([
+      "thesis",
+      "masterarbeit",
+      "arima",
+      "garch",
+      "var",
+      "backtest",
+      "rolling",
+      "method",
+      "methode",
+    ]) ||
+    hasPhrase(["step by step", "schritt für schritt"]);
+
+  const website =
+    hasToken([
+      "website",
+      "portfolio",
+      "nextjs",
+      "deploy",
+      "deployment",
+      "vercel",
+      "playwright",
+      "ask",
+      "assistant",
+      "rag",
+      "citations",
+      "citation",
+    ]) ||
+    hasPhrase(["ask me anything", "markus oeffel s website", "markus öffel s website"]);
+
+  const rag =
+    hasToken([
+      "rag",
+      "retrieval",
+      "embedding",
+      "vector",
+      "prompt",
+      "assistant",
+      "ask",
+      "source",
+      "sources",
+      "citations",
+      "citation",
+    ]) ||
+    hasPhrase(["retrieval augmented generation", "mit citations", "with citations"]);
+
+  const profile =
+    hasToken(["about", "profil", "profile", "experience", "werdegang", "career", "background"]) ||
+    hasPhrase(["who are you", "tell me about yourself"]);
+
+  const stepByStep =
+    hasToken(["step", "steps", "methode", "method", "ablauf", "setup"]) ||
+    hasPhrase(["step by step", "schritt für schritt"]);
+
+  const contact =
+    hasToken(["contact", "kontakt", "email", "mail", "reach", "anfrage", "message"]) ||
+    hasPhrase(["how can i contact", "wie kann ich dich kontaktieren"]);
+
+  const legal =
+    hasToken(["privacy", "datenschutz", "imprint", "impressum", "legal", "gdpr"]) ||
+    hasPhrase(["data protection", "legal notice"]);
+
+  return { skills, thesis, website, rag, profile, stepByStep, contact, legal };
+}
+
+function classifyDocGroup(docId: string): string {
+  if (docId.startsWith("skills:")) return "skills";
+  if (docId.startsWith("thesis")) return "thesis";
+  if (docId === "case_study:thesis") return "thesis";
+  if (docId.startsWith("case_study:")) return "case_study";
+  if (docId.startsWith("experience:")) return "experience";
+  if (docId.startsWith("landing:") || docId === "page:home") return "landing";
+  if (docId.startsWith("how_i_work:")) return "principles";
+  if (docId === "page:contact") return "contact";
+  if (docId.startsWith("page:/")) return "legal";
+  return "other";
+}
+
+function intentBoost(input: {
+  intent: QueryIntent;
+  chunk: RagChunkRow;
+}): number {
+  const { intent, chunk } = input;
+  const docGroup = classifyDocGroup(chunk.doc_id);
+  const sectionId = chunk.section_id;
+
+  let boost = 0;
+
+  if (intent.skills) {
+    if (docGroup === "skills") boost += 0.24;
+    if (docGroup === "experience") boost += 0.1;
+  }
+
+  if (intent.thesis) {
+    if (docGroup === "thesis") boost += 0.25;
+    if (["solution", "architecture", "summary", "impact"].some((s) => sectionId.includes(s))) {
+      boost += 0.12;
+    }
+  }
+
+  if (intent.stepByStep && (sectionId.includes("solution") || sectionId.includes("architecture"))) {
+    boost += 0.11;
+  }
+
+  if (intent.profile && docGroup === "experience") {
+    boost += 0.12;
+  }
+
+  if (intent.contact && docGroup === "contact") {
+    boost += 0.24;
+  }
+
+  if (intent.legal && docGroup === "legal") {
+    boost += 0.2;
+  }
+
+  if (intent.rag || intent.website) {
+    if (chunk.doc_id === "landing:ask" || chunk.doc_id === "page:home") boost += 0.18;
+    if (chunk.doc_id === "case_study:markus-oeffel-website") boost += 0.14;
+  }
+
+  if (!intent.website && chunk.doc_id === "case_study:markus-oeffel-website") {
+    boost -= 0.18;
+  }
+
+  if (!intent.contact && docGroup === "contact") {
+    boost -= 0.08;
+  }
+
+  if (!intent.legal && docGroup === "legal") {
+    boost -= 0.08;
+  }
+
+  return boost;
 }
 
 function cosineSimilarityFromDistance(distance: number): number {
@@ -64,19 +317,26 @@ function selectDiverse(
     chunk: RagChunkRow;
     cosineSimilarity: number;
     lexical: number;
+    coverage: number;
     score: number;
   }>,
-  input: { k: number; maxPerDoc: number },
+  input: { k: number; maxPerDoc: number; intent: QueryIntent },
 ): RagChunkRow[] {
   const byDoc = new Map<string, number>();
+  const byGroup = new Map<string, number>();
   const out: RagChunkRow[] = [];
+  const maxPerGroup = input.intent.website || input.intent.rag ? 5 : 4;
 
   for (const item of sorted) {
     const docId = item.chunk.doc_id;
+    const group = classifyDocGroup(docId);
     const count = byDoc.get(docId) ?? 0;
+    const groupCount = byGroup.get(group) ?? 0;
     if (count >= input.maxPerDoc) continue;
+    if (groupCount >= maxPerGroup) continue;
     out.push(item.chunk);
     byDoc.set(docId, count + 1);
+    byGroup.set(group, groupCount + 1);
     if (out.length >= input.k) break;
   }
 
@@ -115,29 +375,40 @@ export async function retrieveRagContext(input: {
   });
 
   const queryTokens = toTokens(input.query);
+  const intent = parseQueryIntent({
+    query: input.query,
+    queryTokens,
+  });
 
   const scored = candidates
     .map((chunk) => {
       const cosineSimilarity = cosineSimilarityFromDistance(chunk.distance);
-      const lexical = lexicalHitRate(queryTokens, chunk.content);
+      const textForLexical = `${chunk.title}\n${chunk.section_id}\n${chunk.content}`;
+      const lexical = lexicalHitRate(queryTokens, textForLexical);
+      const coverage = lexicalCoverage(queryTokens, textForLexical);
+      const prior = intentBoost({ intent, chunk });
 
-      // Best-practice-ish: combine semantic (cosine) and lexical overlap,
-      // then apply mild priors for structure and linkability.
       const score =
-        cosineSimilarity * 0.72 +
-        lexical * 0.28 +
+        cosineSimilarity * 0.62 +
+        lexical * 0.22 +
+        coverage * 0.11 +
+        prior +
         (chunk.href ? 0.02 : 0);
 
-      return { chunk, cosineSimilarity, lexical, score };
+      return { chunk, cosineSimilarity, lexical, coverage, score };
     })
     .filter((s) => {
       if (minCosineSimilarity == null) return true;
       // Allow lexical hits to override similarity threshold for exact terms.
-      return s.cosineSimilarity >= minCosineSimilarity || s.lexical >= 0.2;
+      return (
+        s.cosineSimilarity >= minCosineSimilarity ||
+        s.lexical >= 0.2 ||
+        s.coverage >= 0.35
+      );
     })
-    .sort((a, b) => b.score - a.score);
+    .sort((a, b) => b.score - a.score || b.lexical - a.lexical || b.cosineSimilarity - a.cosineSimilarity);
 
-  const selected = selectDiverse(scored, { k: finalK, maxPerDoc });
+  const selected = selectDiverse(scored, { k: finalK, maxPerDoc, intent });
 
   const sources = selected
     .map((c, idx) => {
@@ -175,4 +446,3 @@ export async function retrieveRagContext(input: {
 
   return { chunks: selected, citations, suggested_links, sources };
 }
-

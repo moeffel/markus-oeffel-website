@@ -76,9 +76,25 @@ export async function POST(request: Request) {
       ip,
       intent: parsed.data.intent ?? null,
       reason: sent.error,
+      detail: sent.detail ?? null,
     });
-    return NextResponse.json({ error: "provider_error" }, { status: 500 });
+
+    if (
+      sent.error === "provider_not_configured" ||
+      sent.error === "missing_contact_to"
+    ) {
+      return NextResponse.json(
+        { error: "provider_not_configured" },
+        { status: 503 },
+      );
+    }
+
+    return NextResponse.json({ error: "provider_error" }, { status: 502 });
   }
 
-  return NextResponse.json({ ok: true, captcha: captchaRequired ? "used" : "not_required" });
+  return NextResponse.json({
+    ok: true,
+    provider: sent.provider,
+    captcha: captchaRequired ? "used" : "not_required",
+  });
 }

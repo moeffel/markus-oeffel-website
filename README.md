@@ -5,7 +5,7 @@ Bilingual (DE/EN) personal website built with Next.js App Router.
 ## Features (v1)
 
 - **CMS-driven content** via Sanity (private dataset) with Draft/Preview + publish webhooks.
-- **Contact form** via Resend + Cloudflare Turnstile + distributed rate limiting (Upstash).
+- **Contact form** with provider fallback (Resend or SMTP) + Cloudflare Turnstile + distributed rate limiting (Upstash).
 - **AI Assistant (“Ask”)**: low-cost lexical RAG by default, optional vector+LLM mode with citations (Supabase Postgres + pgvector + OpenAI).
 - **SEO**: canonical + hreflang, sitemap/robots, template OG images, JSON-LD.
 - **Security**: nonce-based CSP (prod), HSTS (prod), webhook HMAC auth, PII-redacted logging.
@@ -28,6 +28,7 @@ Notes:
 - The site runs without most env vars (falls back to local placeholder content and disables captcha verification in dev).
 - For production/staging you should set all required env vars.
 - The default landing photo path is `public/profile.jpeg` (`NEXT_PUBLIC_PROFILE_PHOTO=/profile.jpeg`).
+- Contact delivery can run via `RESEND_API_KEY` **or** SMTP (`SMTP_HOST` + credentials). Use `CONTACT_PROVIDER=auto` to try both.
 
 3. Run dev server:
 
@@ -107,7 +108,7 @@ Tracked events (FR-100):
 
 ## Ops / Runbooks (quick)
 
-- **Contact API down**: hide/disable the form and show a mailto fallback (and/or set Resend env vars).
+- **Contact API down**: verify `CONTACT_TO_EMAIL` and provider config (`RESEND_API_KEY` or `SMTP_*`), then show mailto fallback.
 - **Ask budget exceeded**: increase `ASK_DAILY_LIMIT` (or `ASK_DAILY_BUDGET_USD`) or wait for the daily window to reset.
 - **Webhook failing**: verify HMAC secret and raw-body signing; manually call `/api/revalidate`.
 

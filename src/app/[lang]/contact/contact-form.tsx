@@ -17,6 +17,7 @@ type ContactErrorResponse =
   | { error: "rate_limited" }
   | { error: "captcha_required" }
   | { error: "captcha_invalid"; codes?: string[] }
+  | { error: "provider_not_configured" }
   | { error: "provider_error" };
 
 export function ContactForm({ lang }: { lang: Language }) {
@@ -88,6 +89,17 @@ export function ContactForm({ lang }: { lang: Language }) {
             lang === "de"
               ? "Captcha ungültig. Bitte erneut versuchen."
               : "Invalid captcha. Please try again.",
+        });
+        return;
+      }
+
+      if (err?.error === "provider_not_configured") {
+        setState({
+          kind: "error",
+          message:
+            lang === "de"
+              ? "Kontakt ist noch nicht komplett konfiguriert. Bitte später erneut versuchen."
+              : "Contact delivery is not fully configured yet. Please try again later.",
         });
         return;
       }

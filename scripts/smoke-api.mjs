@@ -109,8 +109,8 @@ async function checkContactContract() {
 
   const status = res.status;
   ensure(
-    status === 200 || status === 500,
-    `Expected 200 or 500 for ${url}, got ${status}`,
+    status === 200 || status === 502 || status === 503,
+    `Expected 200 or 502/503 for ${url}, got ${status}`,
   );
 
   if (status === 200) {
@@ -118,7 +118,10 @@ async function checkContactContract() {
     ensure(json.ok === true, "Expected { ok: true } on contact success.");
   } else {
     ensureErrorPayload(json);
-    ensure(json.error === "provider_error", `Expected provider_error, got ${json.error}`);
+    ensure(
+      json.error === "provider_error" || json.error === "provider_not_configured",
+      `Expected provider_error/provider_not_configured, got ${json.error}`,
+    );
   }
 
   console.log(`[ok] /api/contact contract (${status})`);

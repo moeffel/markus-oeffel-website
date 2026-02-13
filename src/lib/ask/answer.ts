@@ -8,7 +8,7 @@ import {
   getThesis,
 } from "@/lib/content";
 import type { CaseStudy } from "@/lib/content/schemas";
-import { LANDING_COPY } from "@/lib/content/site-copy";
+import { CONTACT_COPY, LANDING_COPY, LEGAL_COPY } from "@/lib/content/site-copy";
 import type { Language } from "@/lib/i18n";
 
 export type AskCitation = {
@@ -46,8 +46,16 @@ type QueryIntent = {
   skills: boolean;
   thesis: boolean;
   website: boolean;
+  rag: boolean;
   profile: boolean;
   stepByStep: boolean;
+  contact: boolean;
+  legal: boolean;
+};
+
+type RankResult = {
+  ranked: RankedChunk[];
+  intent: QueryIntent;
 };
 
 const SECTION_LABELS: Record<Language, Record<string, string>> = {
@@ -65,6 +73,8 @@ const SECTION_LABELS: Record<Language, Record<string, string>> = {
     principle: "Arbeitsprinzip",
     profile: "Profil",
     ask: "Ask",
+    copy: "Kontakt",
+    legal: "Recht",
   },
   en: {
     summary: "Summary",
@@ -80,6 +90,8 @@ const SECTION_LABELS: Record<Language, Record<string, string>> = {
     principle: "Work principle",
     profile: "Profile",
     ask: "Ask",
+    copy: "Contact",
+    legal: "Legal",
   },
 };
 
@@ -240,7 +252,37 @@ function parseQueryIntent(input: {
       "deploy",
       "vercel",
       "playwright",
+      "rag",
+      "assistant",
+      "ask",
+      "citations",
+      "citation",
+      "vector",
+      "embedding",
+      "llm",
     ]) || hasPhrase(["markus oeffel s website", "markus öffel s website"]);
+
+  const rag =
+    hasToken([
+      "rag",
+      "assistant",
+      "ask",
+      "prompt",
+      "citations",
+      "citation",
+      "vector",
+      "embedding",
+      "retrieval",
+      "context",
+      "source",
+      "sources",
+    ]) ||
+    hasPhrase([
+      "ask me anything",
+      "retrieval augmented generation",
+      "with citations",
+      "mit citations",
+    ]);
 
   const profile =
     hasToken([
@@ -259,8 +301,14 @@ function parseQueryIntent(input: {
   const stepByStep =
     hasToken(["step", "steps", "methode", "method", "ablauf", "setup"]) ||
     hasPhrase(["step by step", "schritt für schritt"]);
+  const contact =
+    hasToken(["contact", "kontakt", "email", "mail", "reach", "anfrage", "message"]) ||
+    hasPhrase(["how can i contact", "wie kann ich dich kontaktieren"]);
+  const legal =
+    hasToken(["privacy", "datenschutz", "imprint", "impressum", "legal", "gdpr"]) ||
+    hasPhrase(["data protection", "legal notice"]);
 
-  return { skills, thesis, website, profile, stepByStep };
+  return { skills, thesis, website, rag, profile, stepByStep, contact, legal };
 }
 
 function classifyDocGroup(docId: string): string {
@@ -271,6 +319,8 @@ function classifyDocGroup(docId: string): string {
   if (docId.startsWith("experience:")) return "experience";
   if (docId.startsWith("landing:")) return "landing";
   if (docId.startsWith("how_i_work:")) return "principles";
+  if (docId === "page:contact") return "contact";
+  if (docId.startsWith("page:/")) return "legal";
   return "other";
 }
 
@@ -343,12 +393,52 @@ function scoreChunk(input: {
     intentBoost += 1.6;
   }
 
+  if (intent.contact && chunk.docId === "page:contact") {
+    intentBoost += 2.3;
+  }
+
+  if (
+    intent.legal &&
+    [
+      "page:/en/privacy",
+      "page:/de/datenschutz",
+      "page:/en/imprint",
+      "page:/de/impressum",
+    ].includes(chunk.docId)
+  ) {
+    intentBoost += 2.2;
+  }
+
   if (intent.website && chunk.docId === WEBSITE_CASE_DOC_ID) {
     intentBoost += 2.2;
   }
 
+  if (intent.rag) {
+    if (chunk.docId === "landing:ask") intentBoost += 2;
+    if (chunk.docId === WEBSITE_CASE_DOC_ID) intentBoost += 1.2;
+    if (chunk.docId === "page:contact" || chunk.docId.startsWith("page:/")) {
+      intentBoost -= 0.4;
+    }
+  }
+
   if (!intent.website && chunk.docId === WEBSITE_CASE_DOC_ID) {
-    intentBoost -= 1.3;
+    intentBoost -= 3.2;
+  }
+
+  if (intent.skills && chunk.sectionId === "details") {
+    intentBoost += 0.7;
+  }
+
+  if (intent.thesis && chunk.sectionId === "solution") {
+    intentBoost += 1;
+  }
+
+  if (!intent.contact && chunk.docId === "page:contact") {
+    intentBoost -= 0.6;
+  }
+
+  if (!intent.legal && chunk.docId.startsWith("page:/")) {
+    intentBoost -= 0.35;
   }
 
   const exactRatio = exact / queryTokens.length;
@@ -398,9 +488,23 @@ function diversifyRankedChunks(input: {
 function rankCorpus(input: {
   query: string;
   corpus: readonly CorpusChunk[];
-}): RankedChunk[] {
+}): RankResult {
   const queryTokens = toTokens(input.query);
-  if (queryTokens.length === 0) return [];
+  if (queryTokens.length === 0) {
+    return {
+      ranked: [],
+      intent: {
+        skills: false,
+        thesis: false,
+        website: false,
+        rag: false,
+        profile: false,
+        stepByStep: false,
+        contact: false,
+        legal: false,
+      },
+    };
+  }
   const intent = parseQueryIntent({
     query: input.query,
     queryTokens,
@@ -414,7 +518,10 @@ function rankCorpus(input: {
     .filter((entry) => entry.score > 0.35)
     .sort((a, b) => b.score - a.score);
 
-  return diversifyRankedChunks({ ranked, intent });
+  return {
+    ranked: diversifyRankedChunks({ ranked, intent }),
+    intent,
+  };
 }
 
 function chunkCaseStudy(caseStudy: CaseStudy, lang: Language): CorpusChunk[] {
@@ -557,12 +664,76 @@ async function buildCorpus(lang: Language): Promise<CorpusChunk[]> {
     text: [landing.aboutSubtitle, ...landing.aboutParagraphs, ...landing.aboutHighlights].join("\n"),
   });
   chunks.push({
+    docId: "landing:proof",
+    title: landing.headline,
+    href: `/${lang}`,
+    sectionId: "profile",
+    text: [landing.sub, ...landing.proofChips, ...landing.trustPoints].join("\n"),
+  });
+  chunks.push({
     docId: "landing:ask",
     title: landing.askTitle,
     href: `/${lang}/ask`,
     sectionId: "ask",
     text: [landing.askSubtitle, ...landing.askExamplePrompts, ...landing.ragGuardrails].join("\n"),
   });
+  chunks.push({
+    docId: "landing:focus",
+    title: landing.focusTitle,
+    href: `/${lang}`,
+    sectionId: "details",
+    text: landing.focusAreas
+      .map((focus) => `${focus.title}: ${focus.note}`)
+      .join("\n"),
+  });
+  const contact = CONTACT_COPY[lang];
+  chunks.push({
+    docId: "page:contact",
+    title: contact.title,
+    href: `/${lang}/contact`,
+    sectionId: "copy",
+    text: [
+      contact.subtitle,
+      `${contact.asideTitle}: ${contact.asideBody}`,
+      `${contact.responseLabel}: ${contact.responseValue}`,
+      `${contact.scopeLabel}: ${contact.scopeValue}`,
+    ].join("\n"),
+  });
+
+  const legalPages =
+    lang === "de"
+      ? [
+          { docId: "page:/de/impressum", page: LEGAL_COPY.impressum_de },
+          { docId: "page:/de/datenschutz", page: LEGAL_COPY.datenschutz_de },
+        ]
+      : [
+          { docId: "page:/en/imprint", page: LEGAL_COPY.imprint_en },
+          { docId: "page:/en/privacy", page: LEGAL_COPY.privacy_en },
+        ];
+
+  for (const legalPage of legalPages) {
+    const legalText = [
+      legalPage.page.subtitle,
+      ...legalPage.page.sections.flatMap((section) => [
+        section.title,
+        section.description ?? "",
+        ...(section.paragraphs ?? []),
+        ...(section.listItems ?? []),
+        ...(section.infoItems?.map((item) => `${item.label}: ${item.value}`) ?? []),
+      ]),
+      legalPage.page.note ?? "",
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    chunks.push({
+      docId: legalPage.docId,
+      title: legalPage.page.title,
+      href: legalPage.page.href,
+      sectionId: "legal",
+      text: legalText,
+    });
+  }
 
   return chunks;
 }
@@ -606,29 +777,303 @@ function buildSuggestedLinks(ranked: RankedChunk[]): AskSuggestedLink[] {
   ).slice(0, 4);
 }
 
-function buildLocalAnswer(input: {
+function uniqueValues(values: readonly string[], max: number): string[] {
+  const out: string[] = [];
+  for (const value of values) {
+    if (!value) continue;
+    if (out.includes(value)) continue;
+    out.push(value);
+    if (out.length >= max) break;
+  }
+  return out;
+}
+
+function chunkLines(text: string): string[] {
+  return text
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+function buildSkillsAnswer(input: {
+  lang: Language;
+  ranked: RankedChunk[];
+}): string {
+  const skillNames = uniqueValues(
+    input.ranked
+      .filter((r) => r.chunk.docId.startsWith("skills:"))
+      .map((r) => chunkLines(r.chunk.text)[0] ?? "")
+      .filter((v) => v.length > 1),
+    8,
+  );
+
+  const degreeSignals = uniqueValues(
+    input.ranked
+      .filter((r) => r.chunk.docId.startsWith("experience:"))
+      .flatMap((r) => chunkLines(r.chunk.text))
+      .filter((line) =>
+        /(msc|bsc|ects|abschluss|graduated|certificate|zertifikat|wko)/i.test(line),
+      ),
+    4,
+  );
+
+  const linksHint =
+    input.lang === "de"
+      ? "Details findest du auf den Seiten **Skills**, **Experience** und **Projects**."
+      : "You can find details on **Skills**, **Experience**, and **Projects**.";
+
+  if (input.lang === "de") {
+    return [
+      "**Kurzantwort:** Deine Skills sind im Portfolio direkt über Studienabschlüsse, Zertifikate und aktuelle Projekterfahrung belegt.",
+      "",
+      "**Kernaussagen:**",
+      ...skillNames.map((name) => `- ${name}`),
+      ...degreeSignals.map((line) => `- ${line}`),
+      "",
+      `**Details:** ${linksHint}`,
+    ].join("\n");
+  }
+
+  return [
+    "**Short answer:** Your skills are directly evidenced on the site through degree records, certificates, and current project work.",
+    "",
+    "**Key points:**",
+    ...skillNames.map((name) => `- ${name}`),
+    ...degreeSignals.map((line) => `- ${line}`),
+    "",
+    `**Details:** ${linksHint}`,
+  ].join("\n");
+}
+
+function buildThesisMethodAnswer(input: {
+  lang: Language;
+  ranked: RankedChunk[];
+}): string {
+  const steps = uniqueValues(
+    input.ranked
+      .filter(
+        (r) =>
+          r.chunk.docId === "case_study:thesis" &&
+          ["solution", "architecture", "summary"].includes(r.chunk.sectionId),
+      )
+      .flatMap((r) => chunkLines(r.chunk.text)),
+    6,
+  );
+
+  const fallback = input.ranked
+    .filter((r) => r.chunk.docId.includes("thesis"))
+    .map((r) => makeSnippet(r.chunk.text))
+    .slice(0, 4);
+
+  const finalSteps = steps.length ? steps : fallback;
+
+  if (input.lang === "de") {
+    return [
+      "**Kurzantwort:** Methodisch nutzt die Thesis ein strukturiertes ARIMA-GARCH-Setup mit Out-of-sample-Tests und VaR-Backtesting.",
+      "",
+      "**Kernaussagen:**",
+      ...finalSteps.map((step) => `- ${step}`),
+      "",
+      "**Details:** Frag gerne nach Datenpipeline, Tuning-Logik oder Testdesign (DM-/Kupiec-/Christoffersen-Tests).",
+    ].join("\n");
+  }
+
+  return [
+    "**Short answer:** Method-wise, the thesis uses a structured ARIMA-GARCH pipeline with out-of-sample evaluation and VaR backtesting.",
+    "",
+    "**Key points:**",
+    ...finalSteps.map((step) => `- ${step}`),
+    "",
+    "**Details:** Ask for the data pipeline, tuning logic, or test design (DM/Kupiec/Christoffersen).",
+  ].join("\n");
+}
+
+function collectEvidenceLines(input: {
+  ranked: RankedChunk[];
+  max: number;
+}): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+
+  for (const entry of input.ranked) {
+    const lines = chunkLines(entry.chunk.text);
+    for (const line of lines) {
+      const normalized = normalize(line);
+      if (normalized.length < 8) continue;
+      if (normalized.length > 200) continue;
+      if (seen.has(normalized)) continue;
+      if (/^(http|www\.|#)/i.test(line)) continue;
+      seen.add(normalized);
+      out.push(line);
+      if (out.length >= input.max) return out;
+    }
+  }
+
+  return out;
+}
+
+function buildContactAnswer(input: {
+  lang: Language;
+  ranked: RankedChunk[];
+}): string {
+  const contactLines = collectEvidenceLines({
+    ranked: input.ranked.filter((entry) => entry.chunk.docId === "page:contact"),
+    max: 4,
+  });
+
+  if (input.lang === "de") {
+    return [
+      "**Kurzantwort:** Du kannst mich über das Kontaktformular auf der Website erreichen.",
+      "",
+      "**Kernaussagen:**",
+      ...contactLines.map((line) => `- ${line}`),
+      "- Wenn das Formular technisch hakt, nutze die E-Mail im Impressum als Fallback.",
+      "",
+      "**Details:** Öffne **/de/contact** oder **/de/impressum**.",
+    ].join("\n");
+  }
+
+  return [
+    "**Short answer:** You can reach me via the website contact form.",
+    "",
+    "**Key points:**",
+    ...contactLines.map((line) => `- ${line}`),
+    "- If the form has technical issues, use the email listed on the imprint/legal page.",
+    "",
+    "**Details:** Open **/en/contact** or **/en/imprint**.",
+  ].join("\n");
+}
+
+function buildLegalAnswer(input: {
+  lang: Language;
+  ranked: RankedChunk[];
+}): string {
+  const legalLines = collectEvidenceLines({
+    ranked: input.ranked.filter((entry) => entry.chunk.docId.startsWith("page:/")),
+    max: 5,
+  });
+
+  if (input.lang === "de") {
+    return [
+      "**Kurzantwort:** Die rechtlichen Informationen sind als Impressum + Datenschutzerklärung auf der Website verfügbar.",
+      "",
+      "**Kernaussagen:**",
+      ...legalLines.map((line) => `- ${line}`),
+      "",
+      "**Details:** Für Rechts-/Datenschutzfragen direkt **/de/impressum** und **/de/datenschutz** prüfen.",
+    ].join("\n");
+  }
+
+  return [
+    "**Short answer:** Legal information is available on-site via imprint and privacy pages.",
+    "",
+    "**Key points:**",
+    ...legalLines.map((line) => `- ${line}`),
+    "",
+    "**Details:** For legal/privacy details check **/en/imprint** and **/en/privacy**.",
+  ].join("\n");
+}
+
+function buildRagWebsiteAnswer(input: {
+  lang: Language;
+  ranked: RankedChunk[];
+}): string {
+  const core = collectEvidenceLines({
+    ranked: input.ranked.filter((entry) =>
+      ["landing:ask", "landing:focus", WEBSITE_CASE_DOC_ID].includes(entry.chunk.docId),
+    ),
+    max: 5,
+  });
+
+  if (input.lang === "de") {
+    return [
+      "**Kurzantwort:** Das Ask-System ist als citation-first RAG aufgebaut und antwortet aus den Website-Inhalten.",
+      "",
+      "**Kernaussagen:**",
+      ...core.map((line) => `- ${line}`),
+      "- Frage konkret nach Thesis, Skills, Zertifikaten oder Projekten für präzisere Treffer.",
+      "",
+      "**Details:** Wenn ein Thema fehlt, muss es zuerst als Content in die Website aufgenommen werden.",
+    ].join("\n");
+  }
+
+  return [
+    "**Short answer:** The Ask system is built as citation-first RAG and answers from website content.",
+    "",
+    "**Key points:**",
+    ...core.map((line) => `- ${line}`),
+    "- Ask specifically about thesis, skills, certificates, or projects for higher precision.",
+    "",
+    "**Details:** If a topic is missing, add it to site content first so retrieval can ground on it.",
+  ].join("\n");
+}
+
+function buildGenericAnswer(input: {
   lang: Language;
   ranked: RankedChunk[];
 }): string {
   const top = input.ranked.slice(0, 4);
-  const bullets = top
-    .map(
-      ({ chunk }) =>
-        `- **${chunk.title} · ${sectionLabel(chunk.sectionId, input.lang)}**: ${makeSnippet(chunk.text)}`,
-    )
-    .join("\n");
+  const evidence = collectEvidenceLines({
+    ranked: top,
+    max: 6,
+  });
+  const fallbackBullets = top.map(
+    ({ chunk }) =>
+      `- **${chunk.title} · ${sectionLabel(chunk.sectionId, input.lang)}**: ${makeSnippet(chunk.text)}`,
+  );
+  const bullets =
+    evidence.length > 0 ? evidence.map((line) => `- ${line}`) : fallbackBullets;
 
-  const intro =
-    input.lang === "de"
-      ? `Ich habe ${top.length} relevante Stellen in deinem Portfolio gefunden:`
-      : `I found ${top.length} relevant sections in your portfolio:`;
+  if (input.lang === "de") {
+    return [
+      `**Kurzantwort:** Ich habe ${top.length} relevante Stellen im Portfolio gefunden.`,
+      "",
+      "**Kernaussagen:**",
+      ...bullets,
+      "",
+      "**Details:** Frag gerne nach Methode, Tooling, Zeitraum oder Outcome für eine präzisere Antwort.",
+    ].join("\n");
+  }
 
-  const outro =
-    input.lang === "de"
-      ? "Wenn du tiefer gehen willst, frag nach Details zu Methode, Tools oder konkreten Ergebnissen."
-      : "If you want to go deeper, ask for details on method, tools, or concrete outcomes.";
+  return [
+    `**Short answer:** I found ${top.length} relevant sections in the portfolio.`,
+    "",
+    "**Key points:**",
+    ...bullets,
+    "",
+    "**Details:** Ask for method, tooling, timeframe, or outcome to narrow it down further.",
+  ].join("\n");
+}
 
-  return `${intro}\n\n${bullets}\n\n${outro}`;
+function buildLocalAnswer(input: {
+  lang: Language;
+  intent: QueryIntent;
+  ranked: RankedChunk[];
+}): string {
+  if (input.intent.skills) {
+    return buildSkillsAnswer({ lang: input.lang, ranked: input.ranked });
+  }
+
+  if (input.intent.thesis && input.intent.stepByStep) {
+    return buildThesisMethodAnswer({ lang: input.lang, ranked: input.ranked });
+  }
+
+  if (input.intent.contact) {
+    return buildContactAnswer({ lang: input.lang, ranked: input.ranked });
+  }
+
+  if (input.intent.legal) {
+    return buildLegalAnswer({ lang: input.lang, ranked: input.ranked });
+  }
+
+  if (input.intent.rag || input.intent.website) {
+    return buildRagWebsiteAnswer({ lang: input.lang, ranked: input.ranked });
+  }
+
+  return buildGenericAnswer({
+    lang: input.lang,
+    ranked: input.ranked,
+  });
 }
 
 function emptyResult(lang: Language): AskResponse {
@@ -653,14 +1098,33 @@ export async function answerFromCorpus(input: {
 }): Promise<AskResponse> {
   const query = input.query.trim();
   const corpus = await buildCorpus(input.lang);
-  const ranked = rankCorpus({ query, corpus });
+  const rankResult = rankCorpus({ query, corpus });
+  let ranked = rankResult.ranked;
+
+  if (ranked.length < 5) {
+    const fallbackLang: Language = input.lang === "de" ? "en" : "de";
+    const secondary = rankCorpus({
+      query,
+      corpus: await buildCorpus(fallbackLang),
+    }).ranked.map((entry) => ({
+      ...entry,
+      score: entry.score * 0.9,
+    }));
+    ranked = [...ranked, ...secondary]
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 12);
+  }
 
   if (ranked.length === 0) {
     return emptyResult(input.lang);
   }
 
   return {
-    answer: buildLocalAnswer({ lang: input.lang, ranked }),
+    answer: buildLocalAnswer({
+      lang: input.lang,
+      intent: rankResult.intent,
+      ranked,
+    }),
     citations: buildCitations(ranked),
     suggested_links: buildSuggestedLinks(ranked),
   };
@@ -672,7 +1136,7 @@ export async function answerFromCorpusWithLlm(input: {
 }): Promise<AskResponse> {
   const query = input.query.trim();
   const corpus = await buildCorpus(input.lang);
-  const ranked = rankCorpus({ query, corpus });
+  const { ranked, intent } = rankCorpus({ query, corpus });
 
   if (ranked.length === 0) {
     return emptyResult(input.lang);
@@ -694,7 +1158,11 @@ export async function answerFromCorpusWithLlm(input: {
   } catch (err) {
     console.error("[ask] corpus+llm failed; falling back to local answer.", err);
     return {
-      answer: buildLocalAnswer({ lang: input.lang, ranked }),
+      answer: buildLocalAnswer({
+        lang: input.lang,
+        intent,
+        ranked,
+      }),
       citations,
       suggested_links,
     };

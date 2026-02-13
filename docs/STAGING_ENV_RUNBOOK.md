@@ -18,9 +18,11 @@ Detail-Matrix für Vercel-Env-Werte: `docs/VERCEL_ENV_MATRIX.md`.
 - `NEXT_PUBLIC_SITE_URL` (echte Staging-Domain, nicht localhost)
 - `WEBHOOK_HMAC_SECRET`
 - `DRAFT_MODE_SECRET`
-- `RESEND_API_KEY`
 - `CONTACT_FROM_EMAIL`
 - `CONTACT_TO_EMAIL`
+- **Mindestens ein Mail-Provider:**
+  - `RESEND_API_KEY` **oder**
+  - `SMTP_HOST` + `SMTP_PORT` + `SMTP_USER` + `SMTP_PASS` (+ optional `SMTP_FROM_EMAIL`)
 
 Optional:
 - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` + `TURNSTILE_SECRET_KEY`

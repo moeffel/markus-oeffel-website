@@ -815,8 +815,60 @@ function sourcesFromRanked(ranked: RankedChunk[]): string {
     .join("\n\n");
 }
 
-function buildCitations(ranked: RankedChunk[]): AskCitation[] {
-  return ranked.slice(0, 6).map(({ chunk }) => ({
+function pickProfileRankedContext(input: {
+  ranked: RankedChunk[];
+  intent: QueryIntent;
+  query: string;
+}): RankedChunk[] {
+  const intent = input.intent;
+  if (!intent || !intent.profile) return input.ranked;
+
+  const years = intent.years.length
+    ? intent.years
+    : extractYearTokens(normalize(input.query));
+  const experienceRanked = input.ranked.filter((entry) =>
+    entry.chunk.docId.startsWith("experience:"),
+  );
+
+  if (experienceRanked.length === 0) return input.ranked;
+  if (years.length === 0) return experienceRanked;
+
+  const timelineYearMatches = experienceRanked.filter((entry) => {
+    const text = `${entry.chunk.title}\n${entry.chunk.sectionId}\n${entry.chunk.text}`;
+    return years.some((year) => text.includes(year));
+  });
+
+  if (timelineYearMatches.length === 0) return experienceRanked;
+
+  const ordered: RankedChunk[] = [];
+  const seen = new Set<string>();
+  for (const entry of timelineYearMatches) {
+    const key = `${entry.chunk.docId}:${entry.chunk.sectionId}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    ordered.push(entry);
+  }
+  for (const entry of experienceRanked) {
+    const key = `${entry.chunk.docId}:${entry.chunk.sectionId}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    ordered.push(entry);
+  }
+  return ordered;
+}
+
+function buildCitations(input: {
+  ranked: RankedChunk[];
+  intent: QueryIntent;
+  query: string;
+}): AskCitation[] {
+  const citationRanked = pickProfileRankedContext({
+    ranked: input.ranked,
+    intent: input.intent,
+    query: input.query,
+  });
+
+  return citationRanked.slice(0, 6).map(({ chunk }) => ({
     doc_id: chunk.docId,
     title: chunk.title,
     section_id: chunk.sectionId,
@@ -824,8 +876,19 @@ function buildCitations(ranked: RankedChunk[]): AskCitation[] {
   }));
 }
 
-function buildSuggestedLinks(ranked: RankedChunk[]): AskSuggestedLink[] {
-  return Array.from(
+function buildSuggestedLinks(input: {
+  ranked: RankedChunk[];
+  intent: QueryIntent;
+  lang: Language;
+  query: string;
+}): AskSuggestedLink[] {
+  const ranked = pickProfileRankedContext({
+    ranked: input.ranked,
+    intent: input.intent,
+    query: input.query,
+  });
+
+  const links = Array.from(
     new Map(
       ranked
         .map((r) => r.chunk)
@@ -835,7 +898,17 @@ function buildSuggestedLinks(ranked: RankedChunk[]): AskSuggestedLink[] {
           { label: c.title, href: c.href! } satisfies AskSuggestedLink,
         ]),
     ).values(),
-  ).slice(0, 4);
+  );
+
+  if (input.intent?.profile) {
+    links.sort((a, b) => {
+      const ah = a.href === `/${input.lang}/experience` ? -1 : 0;
+      const bh = b.href === `/${input.lang}/experience` ? -1 : 0;
+      return ah - bh;
+    });
+  }
+
+  return links.slice(0, 4);
 }
 
 function uniqueValues(values: readonly string[], max: number): string[] {
@@ -1264,15 +1337,30 @@ export async function answerFromCorpus(input: {
     return emptyResult(input.lang);
   }
 
+  const filteredRanked = pickProfileRankedContext({
+    ranked,
+    intent: rankResult.intent,
+    query,
+  });
+
   return {
     answer: buildLocalAnswer({
       lang: input.lang,
       query,
       intent: rankResult.intent,
-      ranked,
+      ranked: filteredRanked,
     }),
-    citations: buildCitations(ranked),
-    suggested_links: buildSuggestedLinks(ranked),
+    citations: buildCitations({
+      ranked: filteredRanked,
+      intent: rankResult.intent,
+      query,
+    }),
+    suggested_links: buildSuggestedLinks({
+      ranked: filteredRanked,
+      intent: rankResult.intent,
+      lang: input.lang,
+      query,
+    }),
   };
 }
 
@@ -1288,9 +1376,24 @@ export async function answerFromCorpusWithLlm(input: {
     return emptyResult(input.lang);
   }
 
-  const citations = buildCitations(ranked);
-  const suggested_links = buildSuggestedLinks(ranked);
-  const sources = sourcesFromRanked(ranked);
+  const filteredRanked = pickProfileRankedContext({
+    ranked,
+    intent,
+    query,
+  });
+
+  const citations = buildCitations({
+    ranked: filteredRanked,
+    intent,
+    query,
+  });
+  const suggested_links = buildSuggestedLinks({
+    ranked: filteredRanked,
+    intent,
+    lang: input.lang,
+    query,
+  });
+  const sources = sourcesFromRanked(filteredRanked);
   const prompt = buildAskPrompt({ lang: input.lang, query, sources });
 
   try {
@@ -1308,7 +1411,7 @@ export async function answerFromCorpusWithLlm(input: {
         lang: input.lang,
         query,
         intent,
-        ranked,
+        ranked: filteredRanked,
       }),
       citations,
       suggested_links,

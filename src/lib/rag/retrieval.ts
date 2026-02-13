@@ -387,6 +387,43 @@ function selectDiverse(
   return out;
 }
 
+function pickProfileChunks(input: {
+  chunks: RagChunkRow[];
+  intent: QueryIntent;
+}): RagChunkRow[] {
+  if (!input.intent.profile) return input.chunks;
+
+  const experienceChunks = input.chunks.filter((chunk) =>
+    chunk.doc_id.startsWith("experience:"),
+  );
+  if (experienceChunks.length === 0) return input.chunks;
+
+  const years = input.intent.years;
+  if (years.length === 0) return experienceChunks;
+
+  const yearMatches = experienceChunks.filter((chunk) => {
+    const text = `${chunk.title}\n${chunk.section_id}\n${chunk.content}`;
+    return years.some((year) => text.includes(year));
+  });
+  if (yearMatches.length === 0) return experienceChunks;
+
+  const ordered: RagChunkRow[] = [];
+  const seen = new Set<string>();
+  for (const chunk of yearMatches) {
+    const key = `${chunk.doc_id}:${chunk.section_id}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    ordered.push(chunk);
+  }
+  for (const chunk of experienceChunks) {
+    const key = `${chunk.doc_id}:${chunk.section_id}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    ordered.push(chunk);
+  }
+  return ordered;
+}
+
 export async function retrieveRagContext(input: {
   query: string;
   lang: "de" | "en";
@@ -474,7 +511,11 @@ export async function retrieveRagContext(input: {
     })
     .sort((a, b) => b.score - a.score || b.lexical - a.lexical || b.cosineSimilarity - a.cosineSimilarity);
 
-  const selected = selectDiverse(scored, { k: finalK, maxPerDoc, intent });
+  const selectedRaw = selectDiverse(scored, { k: finalK, maxPerDoc, intent });
+  const selected = pickProfileChunks({
+    chunks: selectedRaw,
+    intent,
+  });
 
   const sources = selected
     .map((c, idx) => {

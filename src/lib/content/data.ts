@@ -18,203 +18,20 @@ import type { Language } from "@/lib/i18n";
 
 const caseStudies = z.array(caseStudySchema).parse([
   {
-    slug: "realtime-fraud-scoring",
-    title: {
-      de: "Realtime Fraud Scoring",
-      en: "Realtime fraud scoring",
-    },
-    subtitle: {
-      de: "Risk-Engine + Streaming Pipeline",
-      en: "Risk engine + streaming pipeline",
-    },
-    summary: {
-      de: "Signals → Score → Decisioning. Optimiert für Latency, Auditability und Cost.",
-      en: "Signals → score → decisioning. Optimized for latency, auditability, and cost.",
-    },
-    tags: ["risk", "fraud", "streaming"],
-    domains: ["risk", "data", "infra"],
-    highlightMetrics: [
-      {
-        label: { de: "p95 Latency", en: "p95 latency" },
-        value: "< 120ms",
-      },
-      {
-        label: { de: "Explainability", en: "Explainability" },
-        value: "Cited rules",
-      },
-    ],
-    stack: ["TypeScript", "Postgres", "Kafka", "Redis"],
-    links: [
-      {
-        label: "Architecture deep-dive (contact)",
-        url: "https://fintech-wow.dev/en/contact",
-      },
-    ],
-    published: true,
-    order: 1,
-    date: "2026-02-01",
-    context: {
-      de: "Payments-Produkt mit steigender Fraud-Rate und strikten SLA/Compliance Constraints.",
-      en: "Payments product with rising fraud and strict SLA/compliance constraints.",
-    },
-    problem: {
-      de: "Zu viele False Positives + zu langsame Decisions → Conversion leidet, Risk steigt.",
-      en: "Too many false positives + slow decisions → conversion drops, risk increases.",
-    },
-    solution: {
-      de: [
-        "Streaming Feature Pipeline mit klaren SLAs.",
-        "Rule + model hybrid (kostenkontrolliert).",
-        "Audit trail je Entscheidung (welche Signale, welche Regeln).",
-      ],
-      en: [
-        "Streaming feature pipeline with clear SLAs.",
-        "Hybrid rule + model (cost-controlled).",
-        "Per-decision audit trail (signals + rules).",
-      ],
-    },
-    constraints: {
-      de: [
-        "PCI-ish Kontext: minimal data, strict logging.",
-        "Latency-Budget: sub-second end-to-end.",
-        "Explainability für Trust & Ops.",
-      ],
-      en: [
-        "PCI-ish context: minimal data, strict logging.",
-        "Latency budget: sub-second end-to-end.",
-        "Explainability for trust & ops.",
-      ],
-    },
-    architecture: {
-      type: "text",
-      payload: {
-        de: "Ingestion → feature store → scorer → decisioning API; alles event-driven.",
-        en: "Ingestion → feature store → scorer → decisioning API; all event-driven.",
-      },
-    },
-    yourRole: {
-      de: ["Lead Engineer", "System Design", "Delivery + Ops"],
-      en: ["Lead engineer", "System design", "Delivery + ops"],
-    },
-    impact: {
-      de: [
-        { text: "Reduzierte False Positives (qualitativ).", qualitative: true },
-        { text: "Stabilere SLAs durch Backpressure + SLOs.", qualitative: true },
-        { text: "Weniger Ops-Pain durch auditierbare Decisions.", qualitative: true },
-      ],
-      en: [
-        { text: "Reduced false positives (qualitative).", qualitative: true },
-        { text: "More stable SLAs via backpressure + SLOs.", qualitative: true },
-        { text: "Less ops pain via auditable decisions.", qualitative: true },
-      ],
-    },
-    learnings: {
-      de: [
-        "“Fast” ohne Observability ist Zufall.",
-        "Explainability ist ein Product Feature.",
-      ],
-      en: [
-        "“Fast” without observability is luck.",
-        "Explainability is a product feature.",
-      ],
-    },
-    confidentialityLevel: "redacted",
-  },
-  {
-    slug: "kyc-onboarding",
-    title: {
-      de: "KYC Onboarding",
-      en: "KYC onboarding",
-    },
-    subtitle: {
-      de: "From signup to verified",
-      en: "From signup to verified",
-    },
-    summary: {
-      de: "Sauberer Funnel mit klarer UX, Daten-Minimierung und verlässlichen Verifikations-Signalen.",
-      en: "A clean funnel with strong UX, data minimization, and reliable verification signals.",
-    },
-    tags: ["kyc", "compliance", "ux"],
-    domains: ["kyc", "payments"],
-    highlightMetrics: [
-      { label: { de: "Drop-off", en: "Drop-off" }, value: "↓" },
-      { label: { de: "Review Time", en: "Review time" }, value: "↓" },
-    ],
-    stack: ["Next.js", "TypeScript", "Postgres"],
-    links: [
-      {
-        label: "Discuss onboarding setup",
-        url: "https://fintech-wow.dev/en/contact",
-      },
-    ],
-    published: true,
-    order: 2,
-    date: "2025-11-15",
-    context: {
-      de: "Regulierter Kontext: Identitätsprüfung, Audits, klare Data Retention Regeln.",
-      en: "Regulated context: identity verification, audits, clear data retention rules.",
-    },
-    problem: {
-      de: "KYC war langsam, unklar und schwer zu debuggen.",
-      en: "KYC was slow, unclear, and hard to debug.",
-    },
-    solution: {
-      de: [
-        "State machine für Onboarding Steps.",
-        "Provider abstraction + retries.",
-        "Event logging (PII redacted) + dashboards.",
-      ],
-      en: [
-        "State machine for onboarding steps.",
-        "Provider abstraction + retries.",
-        "Event logging (PII redacted) + dashboards.",
-      ],
-    },
-    constraints: {
-      de: [
-        "PII minimieren (privacy-by-design).",
-        "Idempotenz + Retries.",
-        "Auditability.",
-      ],
-      en: [
-        "Minimize PII (privacy-by-design).",
-        "Idempotency + retries.",
-        "Auditability.",
-      ],
-    },
-    yourRole: {
-      de: ["Architecture", "Implementation", "Stakeholder alignment"],
-      en: ["Architecture", "Implementation", "Stakeholder alignment"],
-    },
-    impact: {
-      de: [
-        { text: "Weniger Drop-off (qualitativ).", qualitative: true },
-        { text: "Klarer Debuggability via event trail.", qualitative: true },
-        { text: "Compliance-ready flows by default.", qualitative: true },
-      ],
-      en: [
-        { text: "Lower drop-off (qualitative).", qualitative: true },
-        { text: "Clear debugability via event trail.", qualitative: true },
-        { text: "Compliance-ready flows by default.", qualitative: true },
-      ],
-    },
-    confidentialityLevel: "public",
-  },
-  {
-    slug: "fintech-wow-portfolio-website",
+    slug: "markus-oeffel-website",
     title: {
       de: "Markus Öffel's Website",
       en: "Markus Öffel's Website",
     },
     subtitle: {
-      de: "Persönliche Website mit Case-Engine",
-      en: "Personal website with case engine",
+      de: "Persönliche Website mit RAG- und Case-System",
+      en: "Personal website with RAG and case system",
     },
     summary: {
-      de: "Mehrsprachige persönliche Website mit strukturierten Case-Studies, Ask-/Contact-Flows und deploy-fähigem QA-Setup.",
-      en: "Bilingual personal website with structured case studies, ask/contact flows, and deployment-ready QA setup.",
+      de: "Mehrsprachige persönliche Website mit strukturierten Projekt-Dossiers, Ask-/Contact-Flows und deploy-fähigem QA-Setup.",
+      en: "Bilingual personal website with structured project dossiers, ask/contact flows, and deployment-ready QA setup.",
     },
-    tags: ["portfolio", "nextjs", "i18n", "playwright", "deploy"],
+    tags: ["portfolio", "nextjs", "i18n", "rag", "playwright", "deploy"],
     domains: ["ai", "data", "infra", "other"],
     highlightMetrics: [
       { label: { de: "Sprachen", en: "Locales" }, value: "2 (DE/EN)" },
@@ -223,8 +40,8 @@ const caseStudies = z.array(caseStudySchema).parse([
         value: "11+ smoke-checked",
       },
       {
-        label: { de: "Deploy Checks", en: "Deploy checks" },
-        value: "17 readiness gates",
+        label: { de: "Nachweise", en: "Evidence files" },
+        value: "8 certificate PDFs",
       },
     ],
     stack: [
@@ -236,30 +53,30 @@ const caseStudies = z.array(caseStudySchema).parse([
       "Vercel-ready setup",
     ],
     links: [
-      { label: "Live site", url: "https://fintech-wow.dev" },
+      { label: "Live site", url: "https://markusoeffel.com" },
       {
         label: "DataCamp Data Analyst",
-        url: "https://fintech-wow.dev/certificates/datacamp-data-analyst-in-python.pdf",
+        url: "https://markusoeffel.com/certificates/datacamp-data-analyst-in-python.pdf",
       },
       {
         label: "Coursera Advanced Data Analytics",
-        url: "https://fintech-wow.dev/certificates/coursera-google-advanced-data-analytics-z0mbgwk4z33c.pdf",
+        url: "https://markusoeffel.com/certificates/coursera-google-advanced-data-analytics-z0mbgwk4z33c.pdf",
       },
       {
         label: "Certification pack (contact)",
-        url: "https://fintech-wow.dev/en/contact",
+        url: "https://markusoeffel.com/en/contact",
       },
     ],
     published: true,
-    order: 3,
-    date: "2026-02-11",
+    order: 1,
+    date: "2026-02-12",
     context: {
-      de: "Die Website dient als zentrale Trust-Fläche für FinTech-, Data- und AI-Projekte inklusive rechtlicher, technischer und inhaltlicher Baseline.",
-      en: "The website acts as a central trust surface for fintech, data, and AI work with legal, technical, and content baselines.",
+      de: "Die Website bündelt Werdegang, Masterarbeit, Zertifikate und Arbeitsweise in einer belastbaren, nachweisorientierten Struktur.",
+      en: "The website consolidates background, thesis work, certifications, and delivery style in one evidence-oriented structure.",
     },
     problem: {
       de: "Vorher fehlte ein konsistenter öffentlicher Auftritt mit nachvollziehbaren Projektdetails, Zertifikatsnachweisen und klarer Kontaktführung.",
-      en: "Previously there was no consistent public presence with traceable project details, certification evidence, and clear contact routing.",
+      en: "Previously, there was no consistent public profile with traceable project detail, certification evidence, and clear contact routing.",
     },
     solution: {
       de: [
@@ -348,19 +165,19 @@ const caseStudies = z.array(caseStudySchema).parse([
     ],
     stack: ["Python", "pandas", "statsmodels", "arch", "yfinance", "SciPy"],
     links: [
-      { label: "Thesis PDF", url: "https://fintech-wow.dev/thesis.pdf" },
-      { label: "Notebook walkthrough", url: "https://fintech-wow.dev/notebook.html" },
+      { label: "Thesis PDF", url: "https://markusoeffel.com/thesis.pdf" },
+      { label: "Notebook walkthrough", url: "https://markusoeffel.com/notebook.html" },
       {
         label: "Notebook source (full .ipynb)",
-        url: "https://fintech-wow.dev/notebooks/thesis-arima-garch-walkthrough.ipynb",
+        url: "https://markusoeffel.com/notebooks/thesis-arima-garch-walkthrough.ipynb",
       },
       {
         label: "Notebook source (interview .ipynb)",
-        url: "https://fintech-wow.dev/notebooks/thesis-arima-garch-interview.ipynb",
+        url: "https://markusoeffel.com/notebooks/thesis-arima-garch-interview.ipynb",
       },
       {
         label: "Python implementation (on request)",
-        url: "https://fintech-wow.dev/en/contact",
+        url: "https://markusoeffel.com/en/contact",
       },
     ],
     published: true,
@@ -641,10 +458,10 @@ const experience = z.array(experienceItemSchema).parse([
 const siteSettings = siteSettingsSchema.parse({
   bookCallUrl:
     "mailto:markus.oeffel@gmail.com?subject=Project%20inquiry%20-%20Markus%20Oeffel",
-  cvUrl: "https://fintech-wow.dev/cv.pdf",
+  cvUrl: "https://markusoeffel.com/cv.pdf",
   socialLinks: [
     { label: "Email", url: "mailto:markus.oeffel@gmail.com" },
-    { label: "Contact", url: "https://fintech-wow.dev/en/contact" },
+    { label: "Contact", url: "https://markusoeffel.com/en/contact" },
   ],
   heroKpis: [
     { label: { de: "Assets", en: "Assets" }, value: "4" },
@@ -686,13 +503,6 @@ const skillCategories = z.array(skillCategorySchema).parse([
         },
       },
       {
-        name: "Monte Carlo",
-        note: {
-          de: "Szenario-Simulation für Risiko- und Entscheidungsräume",
-          en: "Scenario simulation for risk and decision spaces",
-        },
-      },
-      {
         name: "Business Math & Statistics",
         note: {
           de: "Masterkurs Wirtschaftsmathematik und Statistik (Uni Graz)",
@@ -707,36 +517,36 @@ const skillCategories = z.array(skillCategorySchema).parse([
       {
         name: "Corporate Finance",
         note: {
-          de: "DCF (WACC/APV), Multiples (EV/EBITDA, P/E)",
-          en: "DCF (WACC/APV), multiples (EV/EBITDA, P/E)",
+          de: "Fachprüfung + Seminar Corporate Finance (Uni Graz)",
+          en: "Corporate finance exam and seminar track (University of Graz)",
         },
       },
       {
-        name: "Mortgage & Credit Risk",
+        name: "Investment Analysis",
+        note: {
+          de: "Finanzmarktanalyse, Investitionsmanagement und Investmentanalyse 1/2",
+          en: "Financial market analysis, investment management, and investment analysis 1/2",
+        },
+      },
+      {
+        name: "Mortgage & Credit Topics",
         note: {
           de: "Zins-Szenarien, Kreditprüfung, Entscheidungsunterlagen",
           en: "Rate scenarios, credit-risk analysis, decision templates",
         },
       },
       {
-        name: "Market Analytics",
+        name: "Market & Volatility Analytics",
         note: {
           de: "Kapitalmärkte, Krypto-Volatilität, makroökonomischer Kontext",
           en: "Capital markets, crypto volatility, macro context",
         },
       },
       {
-        name: "Academic Finance Track",
+        name: "Decision Support Communication",
         note: {
-          de: "Finance Management, Financial Market Analysis, Investment Analysis, Corporate-Finance-Seminare",
-          en: "Finance management, financial market analysis, investment analysis, and corporate-finance seminars",
-        },
-      },
-      {
-        name: "Risk Communication",
-        note: {
-          de: "Management-Reporting und klare Entscheidungskommunikation",
-          en: "Management reporting and clear decision communication",
+          de: "Management-Reporting und klare Entscheidungskommunikation im Finanzkontext",
+          en: "Management reporting and decision communication in finance contexts",
         },
       },
       {
@@ -766,10 +576,17 @@ const skillCategories = z.array(skillCategorySchema).parse([
         },
       },
       {
+        name: "Applied Data Analytics",
+        note: {
+          de: "Google Advanced Data Analytics (7 Kurse): Statistik, Regression, ML und Capstone",
+          en: "Google Advanced Data Analytics (7 courses): statistics, regression, ML, and capstone",
+        },
+      },
+      {
         name: "AI Prototyping",
         note: {
-          de: "Prompt Engineering, Google AI Studio, Automations-Ideen",
-          en: "Prompt engineering, Google AI Studio, automation concepts",
+          de: "LLM Engineering, RAG, QLoRA und Agents (Udemy Core Track)",
+          en: "LLM engineering, RAG, QLoRA, and agents (Udemy core track)",
         },
       },
       {
@@ -832,6 +649,13 @@ const skillCategories = z.array(skillCategorySchema).parse([
         },
       },
       {
+        name: "Claude Code Crash Course",
+        note: {
+          de: "Claude Code In a Day · 8,5h · abgeschlossen am 29. Januar 2026",
+          en: "Claude Code In a Day · 8.5h · completed on January 29, 2026",
+        },
+      },
+      {
         name: "Google Advanced Data Analytics",
         note: {
           de: "Coursera Professional Certificate (7 Kurse) · abgeschlossen am 14. Februar 2025",
@@ -867,17 +691,10 @@ const skillCategories = z.array(skillCategorySchema).parse([
         },
       },
       {
-        name: "Claude Code Training",
-        note: {
-          de: "Agentic Coding Workflows, Terminal-Automation und iterative Delivery",
-          en: "Agentic coding workflows, terminal automation, and iterative delivery",
-        },
-      },
-      {
         name: "Seminar Track",
         note: {
-          de: "Leadership, Supply Chain Management, Projektmanagement, Präsentation & Rhetorik",
-          en: "Leadership, supply chain management, project management, presentation & rhetoric",
+          de: "Supply Chain Management (50 LE), Projektmanagement (50 LE), Präsentation & Rhetorik (8 LE), Mimikscouting (16 LE)",
+          en: "Supply chain management (50 units), project management (50 units), presentation & rhetoric (8 units), and mimic scouting (16 units)",
         },
       },
     ],

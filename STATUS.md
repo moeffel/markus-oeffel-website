@@ -8,6 +8,24 @@ Stand: 2026-02-11
 - Spezifikation in `fintech-wow-portfolio-spec/SPEC/*` ist weiterhin mit `Status: Draft` markiert.
 - Git-Repository ist initialisiert, aber ohne Commit-Historie (alles aktuell uncommitted).
 
+## Content-Integrity-Loop (2026-02-12)
+
+- Nicht verifizierte Case-Studies entfernt:
+  - `realtime-fraud-scoring`
+  - `kyc-onboarding`
+- Projects basieren jetzt auf verifizierten Inhalten:
+  - `markus-oeffel-website`
+  - `thesis`
+- Landing-/Ask-Texte auf reale Schwerpunkte umgestellt (Thesis, Zertifikate, Skills, Architektur), keine Fraud/KYC-Claims mehr.
+- Skills/Certification-Items auf Basis der verfügbaren Nachweise geschärft:
+  - Coursera Google Advanced Data Analytics (7 Kurse)
+  - DataCamp (Data Analyst in Python, Python Data Fundamentals)
+  - Udemy AI Engineer Core Track
+  - Claude Code Crash Course
+  - Value Management Module 1 & 2
+  - Seminar-Track (SCM, Projektmanagement, Präsentation/Rhetorik, Mimikscouting)
+- Öffentliche Content-Links von `fintech-wow.dev` auf `markusoeffel.com` migriert.
+
 ## Fix-Loop (2026-02-12) – Profilbild
 
 - Problemursache: Profilbild war an eine optionale Env-Variable gebunden; bei fehlerhafter/alter Konfiguration konnte das Bild auf Production fehlen.

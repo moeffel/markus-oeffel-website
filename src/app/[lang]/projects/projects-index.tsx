@@ -10,8 +10,8 @@ import type { Language } from "@/lib/i18n";
 const DOMAIN_LABELS: Record<Language, Record<Domain, string>> = {
   de: {
     payments: "Payments",
-    risk: "Risk/Fraud",
-    kyc: "KYC/AML",
+    risk: "Risk",
+    kyc: "Compliance",
     ai: "AI",
     data: "Data",
     infra: "Infra",
@@ -20,8 +20,8 @@ const DOMAIN_LABELS: Record<Language, Record<Domain, string>> = {
   },
   en: {
     payments: "Payments",
-    risk: "Risk/Fraud",
-    kyc: "KYC/AML",
+    risk: "Risk",
+    kyc: "Compliance",
     ai: "AI",
     data: "Data",
     infra: "Infra",
@@ -51,7 +51,20 @@ export function ProjectsIndex({
   const sort = searchParams.get("sort") ?? "impact";
 
   const [queryDraft, setQueryDraft] = useState(q);
-  const hasActiveFilters = Boolean(q || domain !== "all" || sort !== "impact");
+  const availableDomains = useMemo(
+    () =>
+      Array.from(
+        new Set(projects.flatMap((project) => project.domains)),
+      ) as Domain[],
+    [projects],
+  );
+  const selectedDomain =
+    domain === "all" || availableDomains.includes(domain as Domain)
+      ? domain
+      : "all";
+  const hasActiveFilters = Boolean(
+    q || selectedDomain !== "all" || sort !== "impact",
+  );
 
   const filtered = useMemo(() => {
     const queryTokens = q
@@ -61,9 +74,9 @@ export function ProjectsIndex({
       .filter(Boolean);
 
     const byDomain =
-      domain === "all"
+      selectedDomain === "all"
         ? projects
-        : projects.filter((p) => p.domains.includes(domain as Domain));
+        : projects.filter((p) => p.domains.includes(selectedDomain as Domain));
 
     const byQuery =
       queryTokens.length === 0
@@ -91,7 +104,7 @@ export function ProjectsIndex({
     });
 
     return sorted;
-  }, [domain, lang, projects, q, sort]);
+  }, [lang, projects, q, selectedDomain, sort]);
 
   function updateQuery(next: { q?: string; domain?: string; sort?: string }) {
     const nextParams = new URLSearchParams(searchParams.toString());
@@ -140,9 +153,9 @@ export function ProjectsIndex({
                 q: {q}
               </span>
             ) : null}
-            {domain !== "all" ? (
+            {selectedDomain !== "all" ? (
               <span className="rounded-full border border-white/15 px-3 py-1 text-foreground/75">
-                {DOMAIN_LABELS[lang][domain as Domain]}
+                {DOMAIN_LABELS[lang][selectedDomain as Domain]}
               </span>
             ) : null}
             {sort === "newest" ? (
@@ -186,7 +199,9 @@ export function ProjectsIndex({
                   if (e.key === "Enter") updateQuery({ q: queryDraft });
                 }}
                 placeholder={
-                  lang === "de" ? "fraud, kyc, payments…" : "fraud, kyc, payments…"
+                  lang === "de"
+                    ? "thesis, arima, analytics…"
+                    : "thesis, arima, analytics…"
                 }
                 className="h-11 w-full rounded-xl border border-white/15 bg-[rgba(6,12,22,0.78)] px-3 text-sm outline-none transition focus:border-[var(--accent-cyan)]/70 focus:ring-2 focus:ring-[rgba(93,217,255,0.2)]"
               />
@@ -205,12 +220,12 @@ export function ProjectsIndex({
               {lang === "de" ? "Domain" : "Domain"}
             </span>
             <select
-              value={domain}
+              value={selectedDomain}
               onChange={(e) => updateQuery({ domain: e.target.value })}
               className="h-11 w-full rounded-xl border border-white/15 bg-[rgba(6,12,22,0.78)] px-3 text-sm outline-none transition focus:border-[var(--accent-cyan)]/70 focus:ring-2 focus:ring-[rgba(93,217,255,0.2)]"
             >
               <option value="all">{lang === "de" ? "Alle" : "All"}</option>
-              {(Object.keys(DOMAIN_LABELS[lang]) as Domain[]).map((d) => (
+              {availableDomains.map((d) => (
                 <option key={d} value={d}>
                   {DOMAIN_LABELS[lang][d]}
                 </option>

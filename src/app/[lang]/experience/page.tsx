@@ -8,8 +8,8 @@ import { alternatesForPath } from "@/lib/seo";
 const DOMAIN_LABELS: Record<Language, Record<Domain, string>> = {
   de: {
     payments: "Payments",
-    risk: "Risk/Fraud",
-    kyc: "KYC/AML",
+    risk: "Risk",
+    kyc: "Compliance",
     ai: "AI",
     data: "Data",
     infra: "Infra",
@@ -18,8 +18,8 @@ const DOMAIN_LABELS: Record<Language, Record<Domain, string>> = {
   },
   en: {
     payments: "Payments",
-    risk: "Risk/Fraud",
-    kyc: "KYC/AML",
+    risk: "Risk",
+    kyc: "Compliance",
     ai: "AI",
     data: "Data",
     infra: "Infra",

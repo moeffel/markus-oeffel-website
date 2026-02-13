@@ -31,13 +31,13 @@ type AskStreamEvent =
 
 const SUGGESTED_QUERIES: Record<Language, string[]> = {
   de: [
-    "Welche Projekte sind relevant für Fraud/Risk?",
-    "Wie ist dein Architektur-Ansatz in regulierten Umgebungen?",
+    "Welche Skills kommen direkt aus deinen Zertifikaten?",
+    "Wie ist dein Architektur-Ansatz für Analytics- und AI-Produkte?",
     "Worum ging es in deiner Masterarbeit?",
   ],
   en: [
-    "Which projects relate to fraud/risk?",
-    "What’s your architecture approach in regulated environments?",
+    "Which skills come directly from your certificates?",
+    "What is your architecture approach for analytics and AI products?",
     "What was your thesis about?",
   ],
 };

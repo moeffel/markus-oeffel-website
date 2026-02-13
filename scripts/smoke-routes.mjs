@@ -53,8 +53,8 @@ async function checkCorePages() {
     },
     {
       journey: "J1",
-      path: "/en/projects/realtime-fraud-scoring",
-      mustContain: ["Realtime fraud scoring", "Context", "Problem", "Impact"],
+      path: "/en/projects/markus-oeffel-website",
+      mustContain: ["Markus Öffel's Website", "Context", "Problem", "Impact"],
     },
     {
       journey: "J2",

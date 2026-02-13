@@ -44,7 +44,7 @@ async function checkAskValidation() {
 
 async function checkAskHappyPath() {
   const { res, json, url } = await postJson("/api/ask", {
-    query: "Which projects relate to fraud and risk?",
+    query: "Which methods did Markus use in the ARIMA-GARCH thesis?",
     lang: "en",
     session_id: "smoke-j4",
   });

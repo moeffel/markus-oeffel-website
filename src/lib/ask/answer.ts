@@ -527,12 +527,13 @@ async function buildCorpus(lang: Language): Promise<CorpusChunk[]> {
 
   for (const [catIndex, category] of skillCategories.entries()) {
     for (const [itemIndex, item] of category.items.entries()) {
+      const note = item.note?.[lang] ?? "";
       chunks.push({
         docId: `skills:${catIndex}:${itemIndex}`,
         title: category.title[lang],
         href: `/${lang}/skills`,
         sectionId: "details",
-        text: `${item.name}\n${item.note[lang]}`,
+        text: note ? `${item.name}\n${note}` : item.name,
       });
     }
   }

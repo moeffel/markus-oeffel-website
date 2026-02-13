@@ -219,12 +219,54 @@ function caseStudyChunks(cs: CaseStudy, lang: "de" | "en"): RagChunkInput[] {
 
 function experienceChunks(items: readonly ExperienceItem[], lang: "de" | "en"): RagChunkInput[] {
   const chunks: RagChunkInput[] = [];
+  const labels =
+    lang === "de"
+      ? {
+          role: "Rolle",
+          org: "Organisation",
+          period: "Zeitraum",
+          domains: "Domänen",
+          tech: "Tech",
+          outcomes: "Outcomes",
+        }
+      : {
+          role: "Role",
+          org: "Organization",
+          period: "Period",
+          domains: "Domains",
+          tech: "Tech",
+          outcomes: "Outcomes",
+        };
+
   for (const [idx, item] of items.entries()) {
     const docId = `experience:${idx}`;
     const title = `${item.role[lang]}${item.org ? ` @ ${item.org}` : ""}`;
     const href = `/${lang}/experience`;
-    const content = item.outcomes[lang].join("\n");
+    const timeline = [
+      `${labels.role}: ${item.role[lang]}`,
+      item.org ? `${labels.org}: ${item.org}` : null,
+      `${labels.period}: ${item.period}`,
+      item.domains.length ? `${labels.domains}: ${item.domains.join(", ")}` : null,
+      item.tech.length ? `${labels.tech}: ${item.tech.join(", ")}` : null,
+    ]
+      .filter(Boolean)
+      .join("\n");
+    const outcomes = [
+      `${labels.outcomes}:`,
+      ...item.outcomes[lang],
+    ].join("\n");
+
     chunks.push(
+      ...chunkSection({
+        docId,
+        title,
+        href,
+        sectionId: "timeline",
+        lang,
+        visibility: "public",
+        content: timeline,
+        maxChars: 900,
+      }),
       ...chunkSection({
         docId,
         title,
@@ -232,7 +274,7 @@ function experienceChunks(items: readonly ExperienceItem[], lang: "de" | "en"): 
         sectionId: "outcomes",
         lang,
         visibility: "public",
-        content,
+        content: outcomes,
         maxChars: 1000,
       }),
     );

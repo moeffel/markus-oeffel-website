@@ -166,7 +166,7 @@ const caseStudies = z.array(caseStudySchema).parse([
     links: [
       { label: "Discuss project context", url: "https://markusoeffel.com/en/contact" },
     ],
-    published: true,
+    published: false,
     order: 1,
     date: "2025-07-01",
     context: {

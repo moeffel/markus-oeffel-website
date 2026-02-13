@@ -82,7 +82,7 @@ export default async function LangLayout({
               className="rounded-full border border-white/10 px-3 py-1.5 transition hover:border-[var(--accent-cyan)]/70 hover:text-[var(--accent-cyan)]"
               href={`/${lang}/ask`}
             >
-              {lang === "de" ? "Ask" : "Ask"}
+              {lang === "de" ? "Ask me anything" : "Ask me anything"}
             </Link>
             <Link
               className="rounded-full border border-white/10 px-3 py-1.5 transition hover:border-[var(--accent-cyan)]/70 hover:text-[var(--accent-cyan)]"

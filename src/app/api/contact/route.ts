@@ -89,6 +89,14 @@ export async function POST(request: Request) {
       );
     }
 
+    const exposeProviderDetail = process.env.CONTACT_DEBUG_ERRORS === "1";
+    if (exposeProviderDetail) {
+      return NextResponse.json(
+        { error: "provider_error", detail: sent.detail ?? null },
+        { status: 502 },
+      );
+    }
+
     return NextResponse.json({ error: "provider_error" }, { status: 502 });
   }
 

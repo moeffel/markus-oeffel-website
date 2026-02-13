@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { TurnstileWidget } from "@/components/turnstile";
 import { trackPlausibleEvent } from "@/lib/analytics/plausible";
@@ -18,9 +19,10 @@ type ContactErrorResponse =
   | { error: "captcha_required" }
   | { error: "captcha_invalid"; codes?: string[] }
   | { error: "provider_not_configured" }
-  | { error: "provider_error" };
+  | { error: "provider_error"; detail?: string | null };
 
 export function ContactForm({ lang }: { lang: Language }) {
+  const searchParams = useSearchParams();
   const [state, setState] = useState<ContactState>({ kind: "idle" });
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -36,6 +38,28 @@ export function ContactForm({ lang }: { lang: Language }) {
     "h-11 w-full rounded-xl border border-white/15 bg-[rgba(6,12,22,0.78)] px-3 text-sm outline-none transition focus:border-[var(--accent-cyan)]/70 focus:ring-2 focus:ring-[rgba(93,217,255,0.2)]";
   const textareaClassName =
     "w-full rounded-xl border border-white/15 bg-[rgba(6,12,22,0.78)] px-3 py-2 text-sm outline-none transition focus:border-[var(--accent-cyan)]/70 focus:ring-2 focus:ring-[rgba(93,217,255,0.2)]";
+
+  useEffect(() => {
+    const intentParam = searchParams.get("intent");
+    if (
+      intentParam === "employer" ||
+      intentParam === "client" ||
+      intentParam === "other"
+    ) {
+      setIntent(intentParam);
+    }
+
+    const template = searchParams.get("template");
+    if (template === "cv-request") {
+      setMessage((prev) =>
+        prev.trim()
+          ? prev
+          : lang === "de"
+            ? "Hallo Markus,\n\nich möchte deinen aktuellen CV anfordern.\n\nKontext:\nRolle/Firma:\nWarum ich mich melde:\n\nViele Grüße"
+            : "Hi Markus,\n\nI would like to request your current CV.\n\nContext:\nRole/company:\nWhy I am reaching out:\n\nBest regards",
+      );
+    }
+  }, [searchParams, lang]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -100,6 +124,35 @@ export function ContactForm({ lang }: { lang: Language }) {
             lang === "de"
               ? "Kontakt ist noch nicht komplett konfiguriert. Bitte später erneut versuchen."
               : "Contact delivery is not fully configured yet. Please try again later.",
+        });
+        return;
+      }
+
+      if (err?.error === "provider_error") {
+        const detail = (err.detail ?? "").toLowerCase();
+        const likelyFromIssue =
+          detail.includes("from") ||
+          detail.includes("domain") ||
+          detail.includes("sender") ||
+          detail.includes("verify");
+        const likelyAuthIssue =
+          detail.includes("api key") ||
+          detail.includes("auth") ||
+          detail.includes("unauthorized");
+        setState({
+          kind: "error",
+          message:
+            lang === "de"
+              ? likelyFromIssue
+                ? "Mail-Provider hat den Absender abgelehnt (From/Domain prüfen)."
+                : likelyAuthIssue
+                  ? "Mail-Provider Auth fehlgeschlagen (API-Key prüfen)."
+                  : "Mail-Provider Fehler. Bitte später erneut versuchen."
+              : likelyFromIssue
+                ? "Mail provider rejected sender (check from/domain)."
+                : likelyAuthIssue
+                  ? "Mail provider auth failed (check API key)."
+                  : "Mail provider error. Please try again later.",
         });
         return;
       }

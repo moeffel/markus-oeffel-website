@@ -35,10 +35,22 @@ export async function getPrivateProfileContent(): Promise<
     if (parsed.success) return parsed.data.content;
   }
 
-  const path = process.env.PRIVATE_PROFILE_PATH ?? "private_corpus/high_profile_cv.md";
-  const raw = await readOptionalFile(path);
-  if (!raw) return null;
+  const defaultPaths = [
+    process.env.PRIVATE_PROFILE_PATH ?? "private_corpus/high_profile_cv.md",
+    process.env.PRIVATE_ABOUT_ME_PATH ?? "private_corpus/about_me_rag.md",
+  ];
+  const uniquePaths = Array.from(
+    new Set(defaultPaths.map((path) => path.trim()).filter(Boolean)),
+  );
 
-  return { de: raw, en: raw };
+  const parts = (
+    await Promise.all(uniquePaths.map((path) => readOptionalFile(path)))
+  )
+    .map((part) => part?.trim() ?? "")
+    .filter(Boolean);
+
+  if (parts.length === 0) return null;
+
+  const merged = parts.join("\n\n---\n\n");
+  return { de: merged, en: merged };
 }
-

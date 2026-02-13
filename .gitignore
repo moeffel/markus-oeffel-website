@@ -36,6 +36,7 @@ yarn-error.log*
 
 # private corpus (never commit real content)
 private_corpus/high_profile_cv.md
+private_corpus/about_me_rag.md
 
 # local dev artifacts
 .eslintcache

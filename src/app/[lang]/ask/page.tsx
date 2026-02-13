@@ -12,11 +12,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang } = await params;
   return {
-    title: "Ask",
+    title: "Ask me anything",
     description:
       lang === "de"
-        ? "Stell Fragen zu meinen Projekten – Antworten mit Citations."
-        : "Ask about my work – answers with citations.",
+        ? "Stell Fragen zu Werdegang, Projekten, Thesis und Skills – Antworten mit Quellen."
+        : "Ask about career, projects, thesis, and skills — answers with citations.",
     alternates: alternatesForPath({ lang, pathAfterLang: "/ask" }),
   };
 }
@@ -32,12 +32,12 @@ export default async function AskPage({
     <div className="space-y-6">
       <header className="space-y-2">
         <h1 className="text-3xl font-semibold tracking-tight">
-          {lang === "de" ? "Ask my work" : "Ask my work"}
+          {lang === "de" ? "Ask me anything" : "Ask me anything"}
         </h1>
         <p className="max-w-2xl text-pretty text-foreground/70">
           {lang === "de"
-            ? "Frag mich zu Projekten, Thesis oder Architektur. Antworten kommen mit Citations."
-            : "Ask about projects, the thesis, or architecture. Answers come with citations."}
+            ? "Frag zu Werdegang, Projekten, Thesis oder Skills. Antworten kommen mit Quellen."
+            : "Ask about career, projects, thesis, or skills. Answers come with citations."}
         </p>
       </header>
 

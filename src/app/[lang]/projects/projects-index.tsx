@@ -335,6 +335,25 @@ export function ProjectsIndex({
           );
         })}
       </section>
+
+      <section className="surface-card rounded-2xl p-6 text-sm text-foreground/78">
+        <p className="font-medium text-foreground">
+          {lang === "de" ? "More is coming soon." : "More is coming soon."}
+        </p>
+        <p className="mt-2">
+          {lang === "de"
+            ? "Weitere Projekte folgen schrittweise. Für laufende Repositories siehe GitHub."
+            : "More projects are added step by step. For active repositories, see GitHub."}{" "}
+          <a
+            className="text-[var(--accent-cyan)] underline-offset-4 hover:underline"
+            href="https://github.com/moeffel"
+            rel="noreferrer"
+            target="_blank"
+          >
+            github.com/moeffel
+          </a>
+        </p>
+      </section>
     </div>
   );
 }

@@ -31,11 +31,13 @@ type AskStreamEvent =
 
 const SUGGESTED_QUERIES: Record<Language, string[]> = {
   de: [
+    "Welche Rolle hattest du 2020?",
     "Welche Skills kommen direkt aus deinen Zertifikaten?",
     "Wie war das Setup deiner ARIMA-GARCH-Masterarbeit?",
     "Was machst du als Product Owner im Finanzierungsbereich?",
   ],
   en: [
+    "What was your role in 2020?",
     "Which skills come directly from your certificates?",
     "How was your ARIMA-GARCH thesis setup?",
     "What do you do as a product owner in financing?",
@@ -56,7 +58,7 @@ export function AskClient({
   >([]);
 
   const [answerMarkdown, setAnswerMarkdown] = useState("");
-  const [showCitations, setShowCitations] = useState(true);
+  const [showCitations, setShowCitations] = useState(variant !== "embed");
 
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
   const [captchaToken, setCaptchaToken] = useState("");
@@ -272,21 +274,23 @@ export function AskClient({
         </button>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2">
-        {suggested.map((s) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => {
-              setQuery(s);
-              runAsk(s);
-            }}
-            className="rounded-full border border-black/10 px-4 py-2 text-xs text-foreground/80 hover:border-black/20 dark:border-white/15 dark:hover:border-white/25"
-          >
-            {s}
-          </button>
-        ))}
-      </div>
+      {variant === "page" ? (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {suggested.map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => {
+                setQuery(s);
+                runAsk(s);
+              }}
+              className="rounded-full border border-black/10 px-4 py-2 text-xs text-foreground/80 hover:border-black/20 dark:border-white/15 dark:hover:border-white/25"
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      ) : null}
 
       {state.kind === "error" ? (
         <p className="mt-6 text-sm text-red-600 dark:text-red-400">

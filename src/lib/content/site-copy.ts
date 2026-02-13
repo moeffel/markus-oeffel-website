@@ -71,7 +71,7 @@ export const LANDING_COPY: Record<
     ],
     askTitle: "You can ask anything about me.",
     askSubtitle:
-      "Stell Fragen zu Projekten, Thesis, Skills oder Arbeitsweise. Antworten werden über RAG aus den Website-Inhalten zusammengesetzt.",
+      "Frag zu Projekten, Werdegang, Thesis oder Skills. Antworten basieren auf den Website-Inhalten mit Quellen.",
     askExamplePrompts: [
       "Welche Skills kommen direkt aus MSc, BSc und Zertifikaten?",
       "Wie bist du methodisch in der Masterarbeit vorgegangen?",
@@ -91,20 +91,20 @@ export const LANDING_COPY: Record<
     focusTitle: "Core Focus",
     focusAreas: [
       {
-        title: "Tech Engineering",
-        note: "Next.js, TypeScript, APIs, observability, deployment quality.",
+        title: "Agentic Engineering",
+        note: "Orchestrierung, Spezifikation, Testing und geschlossene agentische Loops.",
       },
       {
         title: "Quant & Risk",
         note: "Zeitreihen, Volatilität, Backtesting, decision-ready metrics.",
       },
       {
-        title: "AI Engineering",
-        note: "RAG pipelines, citation-first answers, pragmatic LLM integration.",
+        title: "Innovation Management",
+        note: "Kreative Perspektiven, strukturierte Experimente und schnelle Lernzyklen.",
       },
       {
-        title: "Innovation Delivery",
-        note: "Vom Konzept zur produktiven Lösung mit messbarem Impact.",
+        title: "Sales Enablement",
+        note: "Kundenzentrierte Insights und Werkzeuge für datenbasierte Entscheidungen.",
       },
     ],
   },
@@ -139,7 +139,7 @@ export const LANDING_COPY: Record<
     ],
     askTitle: "You can ask anything about me.",
     askSubtitle:
-      "Ask about projects, thesis, skills, or how I work. Answers are composed via RAG from site content with citations.",
+      "Ask about projects, career, thesis, or skills. Answers stay grounded in site content with citations.",
     askExamplePrompts: [
       "Which skills come directly from your MSc, BSc, and certificates?",
       "What was your thesis method step by step?",
@@ -159,20 +159,20 @@ export const LANDING_COPY: Record<
     focusTitle: "Core Focus",
     focusAreas: [
       {
-        title: "Tech Engineering",
-        note: "Next.js, TypeScript, APIs, observability, deployment quality.",
+        title: "Agentic Engineering",
+        note: "Orchestration, specification, testing, and closed agentic loops.",
       },
       {
         title: "Quant & Risk",
         note: "Time series, volatility, backtesting, decision-ready metrics.",
       },
       {
-        title: "AI Engineering",
-        note: "RAG pipelines, citation-first answers, pragmatic LLM integration.",
+        title: "Innovation Management",
+        note: "Creative approaches, new perspectives, and structured experimentation.",
       },
       {
-        title: "Innovation Delivery",
-        note: "From concept to production with measurable impact.",
+        title: "Sales Enablement",
+        note: "Customer-centered insights and tooling for data-driven decisions.",
       },
     ],
   },

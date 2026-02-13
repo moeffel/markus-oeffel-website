@@ -1,6 +1,11 @@
 import { openAiEmbedding } from "@/lib/ai/openai";
 import type { AskCitation, AskSuggestedLink } from "@/lib/ask/answer";
-import { ragVectorSearch, type RagChunkRow, type RagVisibility } from "@/lib/rag/db";
+import {
+  ragKeywordSearch,
+  ragVectorSearch,
+  type RagChunkRow,
+  type RagVisibility,
+} from "@/lib/rag/db";
 
 function redactPrivate(text: string): string {
   return text
@@ -88,6 +93,7 @@ type QueryIntent = {
   stepByStep: boolean;
   contact: boolean;
   legal: boolean;
+  years: readonly string[];
 };
 
 function normalize(input: string): string {
@@ -128,6 +134,10 @@ function lexicalCoverage(queryTokens: readonly string[], text: string): number {
     if (normalized.includes(token)) covered += 1;
   }
   return covered / queryTokens.length;
+}
+
+function extractYearTokens(text: string): string[] {
+  return Array.from(new Set(text.match(/\b(?:19|20)\d{2}\b/g) ?? []));
 }
 
 function parseQueryIntent(input: {
@@ -209,8 +219,25 @@ function parseQueryIntent(input: {
     hasPhrase(["retrieval augmented generation", "mit citations", "with citations"]);
 
   const profile =
-    hasToken(["about", "profil", "profile", "experience", "werdegang", "career", "background"]) ||
-    hasPhrase(["who are you", "tell me about yourself"]);
+    hasToken([
+      "about",
+      "profil",
+      "profile",
+      "experience",
+      "werdegang",
+      "career",
+      "background",
+      "profession",
+      "job",
+      "work",
+      "worked",
+      "role",
+      "position",
+      "beruf",
+      "rolle",
+      "station",
+    ]) ||
+    hasPhrase(["who are you", "tell me about yourself", "what was your profession"]);
 
   const stepByStep =
     hasToken(["step", "steps", "methode", "method", "ablauf", "setup"]) ||
@@ -224,7 +251,9 @@ function parseQueryIntent(input: {
     hasToken(["privacy", "datenschutz", "imprint", "impressum", "legal", "gdpr"]) ||
     hasPhrase(["data protection", "legal notice"]);
 
-  return { skills, thesis, website, rag, profile, stepByStep, contact, legal };
+  const years = extractYearTokens(normalizedQuery);
+
+  return { skills, thesis, website, rag, profile, stepByStep, contact, legal, years };
 }
 
 function classifyDocGroup(docId: string): string {
@@ -247,6 +276,7 @@ function intentBoost(input: {
   const { intent, chunk } = input;
   const docGroup = classifyDocGroup(chunk.doc_id);
   const sectionId = chunk.section_id;
+  const searchableText = normalize(`${chunk.title}\n${sectionId}\n${chunk.content}`);
 
   let boost = 0;
 
@@ -268,6 +298,20 @@ function intentBoost(input: {
 
   if (intent.profile && docGroup === "experience") {
     boost += 0.12;
+    if (sectionId.includes("timeline") || sectionId.includes("period")) {
+      boost += 0.1;
+    }
+  }
+
+  if (intent.profile && intent.years.length > 0) {
+    const hasYear = intent.years.some((year) => searchableText.includes(year));
+    if (docGroup === "experience") {
+      boost += hasYear ? 0.32 : -0.08;
+    } else if (hasYear) {
+      boost -= 0.08;
+    } else {
+      boost -= 0.14;
+    }
   }
 
   if (intent.contact && docGroup === "contact") {
@@ -325,7 +369,7 @@ function selectDiverse(
   const byDoc = new Map<string, number>();
   const byGroup = new Map<string, number>();
   const out: RagChunkRow[] = [];
-  const maxPerGroup = input.intent.website || input.intent.rag ? 5 : 4;
+  const maxPerGroup = input.intent.website || input.intent.rag ? 5 : input.intent.profile ? 6 : 4;
 
   for (const item of sorted) {
     const docId = item.chunk.doc_id;
@@ -367,7 +411,7 @@ export async function retrieveRagContext(input: {
     parseOptionalNumber(process.env.ASK_MIN_COSINE_SIMILARITY) ?? null;
 
   const embedding = await openAiEmbedding({ text: input.query });
-  const candidates = await ragVectorSearch({
+  const vectorCandidates = await ragVectorSearch({
     embedding,
     lang: input.lang,
     topK: candidatesK,
@@ -375,6 +419,28 @@ export async function retrieveRagContext(input: {
   });
 
   const queryTokens = toTokens(input.query);
+  const keywordTokens = queryTokens
+    .filter((token) => token.length >= 3 || /\b(?:19|20)\d{2}\b/.test(token))
+    .slice(0, 8);
+  const lexicalCandidates =
+    keywordTokens.length > 0
+      ? await ragKeywordSearch({
+          lang: input.lang,
+          topK: Math.min(candidatesK, 20),
+          visibilities: input.visibilities ?? ["public", "private"],
+          tokens: keywordTokens,
+        }).catch(() => [])
+      : [];
+
+  const merged = new Map<string, RagChunkRow>();
+  for (const candidate of [...vectorCandidates, ...lexicalCandidates]) {
+    const existing = merged.get(candidate.id);
+    if (!existing || candidate.distance < existing.distance) {
+      merged.set(candidate.id, candidate);
+    }
+  }
+  const candidates = Array.from(merged.values());
+
   const intent = parseQueryIntent({
     query: input.query,
     queryTokens,

@@ -1,20 +1,31 @@
 @import "tailwindcss";
 
 :root {
-  --background: #070b12;
-  --foreground: #edf2f9;
+  --background: #0b1020;
+  --foreground: #eaf0ff;
   --font-brand-sans: "Space Grotesk", "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --font-brand-mono: "IBM Plex Mono", "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  --muted: #9ba8bc;
-  --surface: rgba(255, 255, 255, 0.04);
-  --surface-strong: rgba(255, 255, 255, 0.08);
-  --line: rgba(143, 169, 203, 0.24);
-  --finance-gold: #d8b26b;
-  --accent-cyan: #5dd9ff;
-  --accent-emerald: #4ce0b3;
-  --accent-magenta: #e26bff;
+  --muted: #b8c2da;
+  --surface: rgba(18, 27, 51, 0.55);
+  --surface-strong: rgba(18, 27, 51, 0.76);
+  --line: rgba(255, 255, 255, 0.1);
+  --line-strong: rgba(255, 255, 255, 0.16);
+  --finance-gold: #9a7bff;
+  --accent-cyan: #35f2d1;
+  --accent-emerald: #a6ff5e;
+  --accent-magenta: #9a7bff;
+  --accent-red: #ff4d6d;
   --pointer-x: 50%;
   --pointer-y: 18%;
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --s7: 48px;
+  --s8: 64px;
+  --s9: 96px;
 }
 
 @theme inline {
@@ -26,8 +37,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #070b12;
-    --foreground: #edf2f9;
+    --background: #0b1020;
+    --foreground: #eaf0ff;
   }
 }
 
@@ -36,11 +47,10 @@ body {
   color: var(--foreground);
   font-family: var(--font-brand-sans), sans-serif;
   background-image:
-    radial-gradient(46rem 22rem at var(--pointer-x) var(--pointer-y), rgba(93, 217, 255, 0.14), transparent 62%),
-    radial-gradient(72rem 28rem at 10% -12%, rgba(93, 217, 255, 0.2), transparent 60%),
-    radial-gradient(64rem 26rem at 92% -8%, rgba(226, 107, 255, 0.16), transparent 62%),
-    radial-gradient(55rem 24rem at 50% -18%, rgba(216, 178, 107, 0.11), transparent 65%),
-    linear-gradient(to bottom, #090f19 0%, #070b12 42%, #070b12 100%);
+    radial-gradient(46rem 22rem at var(--pointer-x) var(--pointer-y), rgba(53, 242, 209, 0.12), transparent 62%),
+    radial-gradient(68rem 26rem at 90% -12%, rgba(154, 123, 255, 0.15), transparent 64%),
+    radial-gradient(55rem 24rem at 8% -18%, rgba(53, 242, 209, 0.08), transparent 65%),
+    linear-gradient(to bottom, #070a0f 0%, #0b1020 44%, #0b1020 100%);
 }
 
 * {
@@ -54,16 +64,17 @@ body {
 
 .surface-card {
   border: 1px solid var(--line);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));
+  background: rgba(18, 27, 51, 0.55);
+  backdrop-filter: blur(12px);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.07),
-    0 22px 48px rgba(2, 6, 14, 0.5);
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 12px 40px rgba(0, 0, 0, 0.45);
 }
 
 .finance-ring {
   box-shadow:
-    0 0 0 1px rgba(216, 178, 107, 0.48),
-    0 0 36px rgba(216, 178, 107, 0.22);
+    0 0 0 1px rgba(53, 242, 209, 0.42),
+    0 0 28px rgba(154, 123, 255, 0.24);
 }
 
 .accent-border {
@@ -111,9 +122,9 @@ body {
   border-radius: inherit;
   background: linear-gradient(
     130deg,
-    rgba(93, 217, 255, 0.52),
-    rgba(226, 107, 255, 0.36),
-    rgba(216, 178, 107, 0.5)
+    rgba(53, 242, 209, 0.45),
+    rgba(154, 123, 255, 0.38),
+    rgba(53, 242, 209, 0.2)
   );
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
@@ -136,24 +147,25 @@ body {
   z-index: -1;
   background: conic-gradient(
     from 90deg at 50% 50%,
-    rgba(93, 217, 255, 0.12),
-    rgba(226, 107, 255, 0.12),
-    rgba(216, 178, 107, 0.1),
-    rgba(93, 217, 255, 0.12)
+    rgba(53, 242, 209, 0.12),
+    rgba(154, 123, 255, 0.12),
+    rgba(53, 242, 209, 0.08),
+    rgba(154, 123, 255, 0.1)
   );
   filter: blur(52px);
   transform: translateZ(0);
 }
 
 .lift-hover {
-  transition: transform 240ms ease, box-shadow 240ms ease;
+  transition: transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 200ms cubic-bezier(0.2, 0.8, 0.2, 1), border-color 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .lift-hover:hover {
   transform: translateY(-3px);
+  border-color: var(--line-strong);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.07),
-    0 28px 52px rgba(2, 6, 14, 0.56);
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 18px 60px rgba(0, 0, 0, 0.55);
 }
 
 @media (prefers-reduced-motion: no-preference) {

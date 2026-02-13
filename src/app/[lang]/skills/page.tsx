@@ -33,6 +33,11 @@ export default async function SkillsPage({
     getSkillCategories(),
     getHowIWorkPrinciples(),
   ]);
+  const accentByIndex = [
+    "var(--accent-cyan)",
+    "var(--accent-magenta)",
+    "var(--accent-emerald)",
+  ] as const;
   const totalSkillItems = categories.reduce(
     (count, category) => count + category.items.length,
     0,
@@ -70,11 +75,20 @@ export default async function SkillsPage({
       </header>
 
       <section className="grid gap-4 sm:grid-cols-2">
-        {categories.map((category) => (
+        {categories.map((category, index) => {
+          const accent = accentByIndex[index % accentByIndex.length];
+          return (
           <article
             key={category.title.en}
             className="surface-card rounded-3xl p-6"
+            style={{
+              borderColor: "var(--line-strong)",
+            }}
           >
+            <span
+              className="mb-4 block h-1.5 w-20 rounded-full"
+              style={{ background: accent }}
+            />
             <h2 className="text-xl font-semibold tracking-tight text-foreground">
               {category.title[lang]}
             </h2>
@@ -82,7 +96,8 @@ export default async function SkillsPage({
               {category.items.map((item) => (
                 <li
                   key={item.name}
-                  className="rounded-2xl border border-white/12 bg-[rgba(8,16,28,0.58)] p-4"
+                  className="rounded-2xl border bg-[rgba(8,16,28,0.58)] p-4"
+                  style={{ borderColor: `${accent}44` }}
                 >
                   <p className="text-sm font-semibold text-foreground">{item.name}</p>
                   {item.note ? (
@@ -92,7 +107,8 @@ export default async function SkillsPage({
               ))}
             </ul>
           </article>
-        ))}
+          );
+        })}
       </section>
 
       <section className="surface-card rounded-3xl p-6">

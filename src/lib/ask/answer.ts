@@ -51,6 +51,7 @@ type QueryIntent = {
   stepByStep: boolean;
   contact: boolean;
   legal: boolean;
+  years: readonly string[];
 };
 
 type RankResult = {
@@ -69,6 +70,7 @@ const SECTION_LABELS: Record<Language, Record<string, string>> = {
     architecture: "Architektur",
     learnings: "Learnings",
     outcomes: "Outcomes",
+    timeline: "Timeline",
     details: "Details",
     principle: "Arbeitsprinzip",
     profile: "Profil",
@@ -86,6 +88,7 @@ const SECTION_LABELS: Record<Language, Record<string, string>> = {
     architecture: "Architecture",
     learnings: "Learnings",
     outcomes: "Outcomes",
+    timeline: "Timeline",
     details: "Details",
     principle: "Work principle",
     profile: "Profile",
@@ -171,6 +174,10 @@ function toTokens(text: string): string[] {
   return normalize(text)
     .split(/\s+/)
     .filter((token) => token.length >= 2 && !STOPWORDS.has(token));
+}
+
+function extractYearTokens(text: string): string[] {
+  return Array.from(new Set(text.match(/\b(?:19|20)\d{2}\b/g) ?? []));
 }
 
 function hasPrefixMatch(token: string, candidates: readonly string[]): boolean {
@@ -293,10 +300,23 @@ function parseQueryIntent(input: {
       "werdegang",
       "career",
       "background",
+      "profession",
+      "job",
+      "work",
+      "worked",
+      "role",
+      "position",
+      "beruf",
+      "rolle",
+      "station",
       "product",
       "owner",
     ]) ||
-    hasPhrase(["who are you", "tell me about yourself"]);
+    hasPhrase([
+      "who are you",
+      "tell me about yourself",
+      "what was your profession",
+    ]);
 
   const stepByStep =
     hasToken(["step", "steps", "methode", "method", "ablauf", "setup"]) ||
@@ -308,7 +328,9 @@ function parseQueryIntent(input: {
     hasToken(["privacy", "datenschutz", "imprint", "impressum", "legal", "gdpr"]) ||
     hasPhrase(["data protection", "legal notice"]);
 
-  return { skills, thesis, website, rag, profile, stepByStep, contact, legal };
+  const years = extractYearTokens(normalizedQuery);
+
+  return { skills, thesis, website, rag, profile, stepByStep, contact, legal, years };
 }
 
 function classifyDocGroup(docId: string): string {
@@ -391,6 +413,22 @@ function scoreChunk(input: {
 
   if (intent.profile && docGroup === "experience") {
     intentBoost += 1.6;
+    if (chunk.sectionId === "timeline" || chunk.sectionId === "role") {
+      intentBoost += 0.8;
+    }
+  }
+
+  if (intent.profile && intent.years.length > 0) {
+    const hasMatchingYear = intent.years.some((year) =>
+      normalizedChunkText.includes(year),
+    );
+    if (docGroup === "experience") {
+      intentBoost += hasMatchingYear ? 2.4 : -0.2;
+    } else if (hasMatchingYear) {
+      intentBoost -= 0.3;
+    } else {
+      intentBoost -= 1.2;
+    }
   }
 
   if (intent.contact && chunk.docId === "page:contact") {
@@ -464,8 +502,8 @@ function diversifyRankedChunks(input: {
   const perDoc = new Map<string, number>();
   const perGroup = new Map<string, number>();
 
-  const maxPerDoc = input.intent.website ? 3 : 2;
-  const maxPerGroup = input.intent.website ? 5 : 4;
+  const maxPerDoc = input.intent.website ? 3 : input.intent.profile ? 3 : 2;
+  const maxPerGroup = input.intent.website ? 5 : input.intent.profile ? 6 : 4;
 
   for (const entry of input.ranked) {
     const docCount = perDoc.get(entry.chunk.docId) ?? 0;
@@ -502,6 +540,7 @@ function rankCorpus(input: {
         stepByStep: false,
         contact: false,
         legal: false,
+        years: [],
       },
     };
   }
@@ -623,12 +662,34 @@ async function buildCorpus(lang: Language): Promise<CorpusChunk[]> {
   });
 
   for (const [i, item] of experience.entries()) {
+    const timelineLines = [
+      `${lang === "de" ? "Rolle" : "Role"}: ${item.role[lang]}`,
+      item.org ? `${lang === "de" ? "Organisation" : "Organization"}: ${item.org}` : null,
+      `${lang === "de" ? "Zeitraum" : "Period"}: ${item.period}`,
+      item.domains.length
+        ? `${lang === "de" ? "Domänen" : "Domains"}: ${item.domains.join(", ")}`
+        : null,
+      item.tech.length ? `${lang === "de" ? "Tech" : "Tech"}: ${item.tech.join(", ")}` : null,
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    chunks.push({
+      docId: `experience:${i}`,
+      title: `${item.role[lang]}${item.org ? ` @ ${item.org}` : ""}`,
+      href: `/${lang}/experience`,
+      sectionId: "timeline",
+      text: timelineLines,
+    });
     chunks.push({
       docId: `experience:${i}`,
       title: `${item.role[lang]}${item.org ? ` @ ${item.org}` : ""}`,
       href: `/${lang}/experience`,
       sectionId: "outcomes",
-      text: item.outcomes[lang].join("\n"),
+      text: [
+        `${lang === "de" ? "Outcomes" : "Outcomes"}:`,
+        ...item.outcomes[lang],
+      ].join("\n"),
     });
   }
 
@@ -1008,6 +1069,81 @@ function buildRagWebsiteAnswer(input: {
   ].join("\n");
 }
 
+function buildProfileAnswer(input: {
+  lang: Language;
+  query: string;
+  ranked: RankedChunk[];
+}): string {
+  const yearTokens = extractYearTokens(normalize(input.query));
+  const experienceEntries = input.ranked.filter((entry) =>
+    entry.chunk.docId.startsWith("experience:"),
+  );
+
+  const timelineEntries = experienceEntries.filter(
+    (entry) => entry.chunk.sectionId === "timeline",
+  );
+  const matchingTimelineEntries =
+    yearTokens.length > 0
+      ? timelineEntries.filter((entry) =>
+          yearTokens.some((year) => entry.chunk.text.includes(year)),
+        )
+      : timelineEntries;
+  const timelineSummaries = uniqueValues(
+    matchingTimelineEntries.map((entry) => {
+      const lines = chunkLines(entry.chunk.text);
+      const roleLine = lines.find((line) => /^(rolle|role):/i.test(line)) ?? "";
+      const orgLine =
+        lines.find((line) => /^(organisation|organization):/i.test(line)) ?? "";
+      const periodLine = lines.find((line) => /^(zeitraum|period):/i.test(line)) ?? "";
+      return [roleLine, orgLine, periodLine].filter(Boolean).join(" · ");
+    }),
+    4,
+  );
+  const timelineLines = collectEvidenceLines({
+    ranked: timelineEntries,
+    max: 8,
+  });
+  const outcomeLines = collectEvidenceLines({
+    ranked: experienceEntries.filter((entry) => entry.chunk.sectionId === "outcomes"),
+    max: 6,
+  });
+
+  const filteredTimelineLines =
+    yearTokens.length > 0
+      ? timelineLines.filter((line) => yearTokens.some((year) => line.includes(year)))
+      : timelineLines;
+
+  const bullets = timelineSummaries.length > 0
+    ? timelineSummaries
+    : filteredTimelineLines.length > 0
+      ? filteredTimelineLines
+      : [...timelineLines, ...outcomeLines].slice(0, 6);
+
+  if (input.lang === "de") {
+    return [
+      "**Kurzantwort:** Das Portfolio enthält deinen Werdegang mit Rolle, Zeitraum und Outcomes.",
+      "",
+      yearTokens.length
+        ? `**Kernaussagen für ${yearTokens.join(", ")}:**`
+        : "**Kernaussagen:**",
+      ...bullets.map((line) => `- ${line}`),
+      "",
+      "**Details:** Für den vollständigen Verlauf öffne **/de/experience**.",
+    ].join("\n");
+  }
+
+  return [
+    "**Short answer:** The portfolio includes your career timeline with role, period, and outcomes.",
+    "",
+    yearTokens.length
+      ? `**Key points for ${yearTokens.join(", ")}:**`
+      : "**Key points:**",
+    ...bullets.map((line) => `- ${line}`),
+    "",
+    "**Details:** Open **/en/experience** for the full timeline.",
+  ].join("\n");
+}
+
 function buildGenericAnswer(input: {
   lang: Language;
   ranked: RankedChunk[];
@@ -1047,6 +1183,7 @@ function buildGenericAnswer(input: {
 
 function buildLocalAnswer(input: {
   lang: Language;
+  query: string;
   intent: QueryIntent;
   ranked: RankedChunk[];
 }): string {
@@ -1064,6 +1201,14 @@ function buildLocalAnswer(input: {
 
   if (input.intent.legal) {
     return buildLegalAnswer({ lang: input.lang, ranked: input.ranked });
+  }
+
+  if (input.intent.profile) {
+    return buildProfileAnswer({
+      lang: input.lang,
+      query: input.query,
+      ranked: input.ranked,
+    });
   }
 
   if (input.intent.rag || input.intent.website) {
@@ -1122,6 +1267,7 @@ export async function answerFromCorpus(input: {
   return {
     answer: buildLocalAnswer({
       lang: input.lang,
+      query,
       intent: rankResult.intent,
       ranked,
     }),
@@ -1160,6 +1306,7 @@ export async function answerFromCorpusWithLlm(input: {
     return {
       answer: buildLocalAnswer({
         lang: input.lang,
+        query,
         intent,
         ranked,
       }),

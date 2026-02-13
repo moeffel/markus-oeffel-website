@@ -98,6 +98,70 @@ export async function ragVectorSearch(input: {
   return rows;
 }
 
+export async function ragKeywordSearch(input: {
+  lang: "de" | "en";
+  topK: number;
+  visibilities: RagVisibility[];
+  tokens: readonly string[];
+}): Promise<RagChunkRow[]> {
+  const p = getPool();
+  const tokens = Array.from(
+    new Set(
+      input.tokens
+        .map((token) => token.trim().toLowerCase())
+        .filter((token) => token.length >= 2),
+    ),
+  ).slice(0, 8);
+
+  if (tokens.length === 0) return [];
+
+  const params: unknown[] = [input.lang, input.visibilities];
+  const matchClauses: string[] = [];
+  const scoreClauses: string[] = [];
+
+  for (const token of tokens) {
+    params.push(`%${token}%`);
+    const idx = params.length;
+    matchClauses.push(
+      `(title ilike $${idx} or section_id ilike $${idx} or content ilike $${idx})`,
+    );
+    scoreClauses.push(
+      `(case when title ilike $${idx} then 3 else 0 end +
+        case when section_id ilike $${idx} then 2 else 0 end +
+        case when content ilike $${idx} then 1 else 0 end)`,
+    );
+  }
+
+  params.push(input.topK);
+  const topKParam = params.length;
+
+  const { rows } = await p.query<RagChunkRow>(
+    `
+      select
+        id,
+        doc_id,
+        title,
+        href,
+        section_id,
+        lang,
+        visibility,
+        content,
+        content_hash,
+        updated_at,
+        2::float as distance
+      from rag_chunks
+      where lang = $1
+        and visibility = any($2::text[])
+        and (${matchClauses.join(" or ")})
+      order by (${scoreClauses.join(" + ")}) desc, updated_at desc
+      limit $${topKParam}
+    `,
+    params,
+  );
+
+  return rows;
+}
+
 export async function ragGetExistingHashes(): Promise<Map<string, string>> {
   const p = getPool();
   const { rows } = await p.query<{ id: string; content_hash: string }>(

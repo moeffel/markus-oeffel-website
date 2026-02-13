@@ -8,6 +8,32 @@ Stand: 2026-02-11
 - Spezifikation in `fintech-wow-portfolio-spec/SPEC/*` ist weiterhin mit `Status: Draft` markiert.
 - Git-Repository ist initialisiert, aber ohne Commit-Historie (alles aktuell uncommitted).
 
+## Neuer Ausbau-Loop (2026-02-13)
+
+- RAG-Qualität für Karrierefragen geschärft:
+  - Experience-Chunks enthalten jetzt zusätzlich Timeline-Metadaten (Rolle, Zeitraum, Domains, Tech) statt nur Outcomes.
+  - Intent-Erkennung erkennt jetzt auch `profession/job/beruf/rolle` und Jahresfragen (z. B. `2020`).
+  - Ranking priorisiert Experience-Timeline bei Profil-/Jahresfragen stärker.
+- Ask-Corpus (Fallback ohne Vector-RAG) ebenfalls auf Timeline + Outcomes erweitert, damit Antworten auch ohne DB robuster bleiben.
+- Home/UX vereinfacht:
+  - doppelte „Execution baseline“-Sektion entfernt.
+  - Ask-Bereich auf Landing verschlankt (weniger Noise, Fokus auf Frage + Antwort).
+  - Nav-/Ask-Label auf „Ask me anything“ umgestellt.
+- Contact-Sektion vereinfacht:
+  - „Prefer async?“-Aside entfernt.
+  - CV-Request über Contact-Flow vorbereitet (`/contact?intent=employer&template=cv-request`).
+- Projekte fokussiert:
+  - nur Website + Thesis öffentlich; weitere Cases vorerst ausgeblendet.
+  - „More is coming soon“ + GitHub-Hinweis ergänzt.
+- Designsystem auf „Noir Quant v0.1“ umgestellt:
+  - neue Farb-/Surface-Tokens, Glass-Layer, subtile Cyan/Violet/Lime-Akzente.
+- Private RAG-Basis erweitert:
+  - neues optionales Profilfile `private_corpus/about_me_rag.md` (gitignored) unterstützt.
+  - Beispiele ergänzt: `private_corpus/about_me_rag.example.md`.
+- Contact-Diagnostik ergänzt:
+  - Optionaler Debug-Schalter `CONTACT_DEBUG_ERRORS=1` gibt Provider-Detailtext in API-Response zurück (nur für Owner-Testing).
+  - Frontend zeigt bei `provider_error` jetzt gezieltere Hinweise (From/Domain vs API-Key).
+
 ## Neuer Ausbau-Loop (2026-02-12)
 
 - Landingpage inhaltlich und visuell weiter in Richtung „About me + Ask/RAG“ ausgebaut.

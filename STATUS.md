@@ -36,6 +36,17 @@ Stand: 2026-02-11
   - `public/thesis-preview/var-exceptions.svg`
 - Thesis-Projektlinks um Colab-Link ergänzt (`src/lib/content/data.ts`).
 
+## Neuer Ausbau-Loop (2026-02-14, Ask-RAG Education Intent Fix)
+
+- Root cause für „no reliable evidence“ bei Fragen wie „what’s your education?“ adressiert:
+  - Intent-Erkennung erweitert (education/academic/study/university/master/bachelor + DE/EN Phrasen).
+  - Evidence-Gates für Skills-/Education-Fragen gelockert, aber weiterhin quellengebunden (kein Halluzinationsmodus).
+- Änderungen in beiden Retrieval-Pfaden:
+  - lokaler Corpus-Ranker (`src/lib/ask/answer.ts`)
+  - Vector-RAG-Retrieval (`src/lib/rag/retrieval.ts`)
+- Ask-UI Prompts ergänzt:
+  - zusätzliche Beispiel-Query für Education-Background in DE/EN (`src/app/[lang]/ask/ask-client.tsx`).
+
 ## Neuer Ausbau-Loop (2026-02-13, Design + Content Cleanup)
 
 - Landing auf „About me first“ geschärft:

@@ -155,6 +155,17 @@ function parseQueryIntent(input: {
     hasToken([
       "skill",
       "skills",
+      "education",
+      "educational",
+      "academic",
+      "study",
+      "studies",
+      "studium",
+      "university",
+      "uni",
+      "master",
+      "bachelor",
+      "graduation",
       "zertifikat",
       "zertifikate",
       "certificate",
@@ -167,6 +178,17 @@ function parseQueryIntent(input: {
       "wko",
     ]) ||
     hasPhrase([
+      "what is your education",
+      "what s your education",
+      "whats your education",
+      "educational background",
+      "academic background",
+      "what did you study",
+      "where did you study",
+      "was ist deine ausbildung",
+      "welche ausbildung",
+      "was hast du studiert",
+      "studienhintergrund",
       "commercial asset advisor",
       "vermögensberater",
       "google advanced data analytics",
@@ -455,21 +477,23 @@ function hasSufficientVectorEvidence(input: {
       (item.lexical >= 0.5 && item.coverage >= 0.34),
   );
 
-  if (input.queryTokens.length === 1 && maxLexical < 1 && maxCoverage < 1) {
-    return false;
-  }
+  if (!input.intent.skills) {
+    if (input.queryTokens.length === 1 && maxLexical < 1 && maxCoverage < 1) {
+      return false;
+    }
 
-  if (
-    input.queryTokens.length >= 2 &&
-    maxLexical < 0.66 &&
-    maxCoverage < 0.66 &&
-    !hasStrongHit
-  ) {
-    return false;
-  }
+    if (
+      input.queryTokens.length >= 2 &&
+      maxLexical < 0.66 &&
+      maxCoverage < 0.66 &&
+      !hasStrongHit
+    ) {
+      return false;
+    }
 
-  if (input.queryTokens.length >= 4 && !hasStrongHit) {
-    return false;
+    if (input.queryTokens.length >= 4 && !hasStrongHit) {
+      return false;
+    }
   }
 
   if (input.intent.sensitivePersonal) {
@@ -492,11 +516,25 @@ function hasSufficientVectorEvidence(input: {
   }
 
   if (input.intent.skills) {
-    const hasSkillEvidence = nonLanding.some(
-      (item) =>
-        item.chunk.doc_id.startsWith("skills:") &&
-        (item.lexical >= 0.34 || item.coverage >= 0.34),
-    );
+    const hasSkillEvidence = nonLanding.some((item) => {
+      const text = normalize(
+        `${item.chunk.title}\n${item.chunk.section_id}\n${item.chunk.content}`,
+      );
+      const hasAcademicSignals =
+        /(education|educational|academic|degree|degrees|msc|bsc|master|bachelor|certificate|certification|abschluss|studium|university|ects|wko)/i
+          .test(text);
+
+      if (item.chunk.doc_id.startsWith("skills:")) {
+        if (item.lexical >= 0.2 || item.coverage >= 0.2) return true;
+        if (hasAcademicSignals) return true;
+      }
+
+      if (item.chunk.doc_id.startsWith("experience:") && hasAcademicSignals) {
+        return true;
+      }
+
+      return false;
+    });
     if (!hasSkillEvidence) return false;
   }
 

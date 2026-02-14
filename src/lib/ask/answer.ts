@@ -213,6 +213,17 @@ function parseQueryIntent(input: {
     hasToken([
       "skill",
       "skills",
+      "education",
+      "educational",
+      "academic",
+      "study",
+      "studies",
+      "studium",
+      "university",
+      "uni",
+      "master",
+      "bachelor",
+      "graduation",
       "zertifikat",
       "zertifikate",
       "certificate",
@@ -229,6 +240,17 @@ function parseQueryIntent(input: {
       "prüfung",
     ]) ||
     hasPhrase([
+      "what is your education",
+      "what s your education",
+      "whats your education",
+      "educational background",
+      "academic background",
+      "what did you study",
+      "where did you study",
+      "was ist deine ausbildung",
+      "welche ausbildung",
+      "was hast du studiert",
+      "studienhintergrund",
       "commercial asset advisor",
       "vermogensberater",
       "vermögensberater",
@@ -667,16 +689,18 @@ function hasSufficientEvidence(input: {
       (entry.exact >= 1 && entry.partial >= 1),
   );
 
-  if (input.queryTokens.length === 1 && maxExact < 1) {
-    return false;
-  }
+  if (!input.intent.skills) {
+    if (input.queryTokens.length === 1 && maxExact < 1) {
+      return false;
+    }
 
-  if (input.queryTokens.length >= 2 && maxExact < 2 && maxExactRatio < 0.66) {
-    return false;
-  }
+    if (input.queryTokens.length >= 2 && maxExact < 2 && maxExactRatio < 0.66) {
+      return false;
+    }
 
-  if (input.queryTokens.length >= 4 && !hasStrongMatch) {
-    return false;
+    if (input.queryTokens.length >= 4 && !hasStrongMatch) {
+      return false;
+    }
   }
 
   if (input.intent.profile && input.intent.years.length > 0) {
@@ -692,12 +716,25 @@ function hasSufficientEvidence(input: {
 
   if (input.intent.skills) {
     const hasSkillEvidence = input.ranked.some((entry) => {
-      if (!entry.chunk.docId.startsWith("skills:")) return false;
-      const match = computeMatchStats({
-        queryTokens: input.queryTokens,
-        chunk: entry.chunk,
-      });
-      return match.exact >= 1 || match.partial >= 1;
+      const text = normalize(`${entry.chunk.title}\n${entry.chunk.text}`);
+      const hasAcademicSignals =
+        /(education|educational|academic|degree|degrees|msc|bsc|master|bachelor|certificate|certification|abschluss|studium|university|ects|wko)/i
+          .test(text);
+
+      if (entry.chunk.docId.startsWith("skills:")) {
+        const match = computeMatchStats({
+          queryTokens: input.queryTokens,
+          chunk: entry.chunk,
+        });
+        if (match.exact >= 1 || match.partial >= 1) return true;
+        if (hasAcademicSignals) return true;
+      }
+
+      if (entry.chunk.docId.startsWith("experience:") && hasAcademicSignals) {
+        return true;
+      }
+
+      return false;
     });
     if (!hasSkillEvidence) return false;
   }

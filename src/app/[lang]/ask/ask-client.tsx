@@ -31,12 +31,14 @@ type AskStreamEvent =
 
 const SUGGESTED_QUERIES: Record<Language, string[]> = {
   de: [
+    "Wie ist dein Ausbildungsweg (BSc/MSc)?",
     "Welche Rolle hattest du 2020?",
     "Welche Skills kommen direkt aus deinen Zertifikaten?",
     "Wie war das Setup deiner ARIMA-GARCH-Masterarbeit?",
     "Was machst du als Product Owner im Finanzierungsbereich?",
   ],
   en: [
+    "What is your education background (BSc/MSc)?",
     "What was your role in 2020?",
     "Which skills come directly from your certificates?",
     "How was your ARIMA-GARCH thesis setup?",

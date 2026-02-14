@@ -31,7 +31,20 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const parsed = contactSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "validation_error" }, { status: 400 });
+    const fieldErrors = parsed.error.flatten().fieldErrors;
+    return NextResponse.json(
+      {
+        error: "validation_error",
+        fields: {
+          name: fieldErrors.name ?? [],
+          email: fieldErrors.email ?? [],
+          message: fieldErrors.message ?? [],
+          company: fieldErrors.company ?? [],
+          intent: fieldErrors.intent ?? [],
+        },
+      },
+      { status: 400 },
+    );
   }
 
   const captchaRequired =

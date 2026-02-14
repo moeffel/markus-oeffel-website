@@ -31,6 +31,7 @@ Notes:
 - Contact delivery can run via `RESEND_API_KEY` **or** SMTP (`SMTP_HOST` + credentials). Use `CONTACT_PROVIDER=auto` to try both.
 - Recipient can be configured via `CONTACT_TO_EMAIL` (or aliases `RESEND_TO_EMAIL` / `SMTP_TO_EMAIL`).
 - Sender can be configured via `CONTACT_FROM_EMAIL` (or alias `RESEND_FROM_EMAIL`); optional fallback is `CONTACT_ALLOW_RESEND_ONBOARDING_FROM=true`.
+- Optional UX fallback: set `NEXT_PUBLIC_CONTACT_FALLBACK_EMAIL` so the contact form can open a prefilled `mailto:` link if delivery is unavailable.
 
 3. Run dev server:
 

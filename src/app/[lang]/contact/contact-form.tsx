@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { TurnstileWidget } from "@/components/turnstile";
@@ -11,10 +11,27 @@ type ContactState =
   | { kind: "idle" }
   | { kind: "submitting" }
   | { kind: "success" }
-  | { kind: "error"; message: string };
+  | {
+      kind: "error";
+      message: string;
+      code:
+        | "validation_error"
+        | "rate_limited"
+        | "captcha_required"
+        | "captcha_invalid"
+        | "provider_not_configured"
+        | "provider_error"
+        | "network_error"
+        | "unknown";
+    };
 
 type ContactErrorResponse =
-  | { error: "validation_error" }
+  | {
+      error: "validation_error";
+      fields?: Partial<
+        Record<"name" | "email" | "message" | "company" | "intent", string[]>
+      >;
+    }
   | { error: "rate_limited" }
   | { error: "captcha_required" }
   | { error: "captcha_invalid"; codes?: string[] }
@@ -34,6 +51,10 @@ function cvRequestTemplate(lang: Language): string {
   return lang === "de"
     ? "Hallo Markus,\n\nich möchte deinen aktuellen CV anfordern.\n\nKontext:\nRolle/Firma:\nWarum ich mich melde:\n\nViele Grüße"
     : "Hi Markus,\n\nI would like to request your current CV.\n\nContext:\nRole/company:\nWhy I am reaching out:\n\nBest regards";
+}
+
+function hasBasicPublicEmailShape(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(value.trim());
 }
 
 export function ContactForm({ lang }: { lang: Language }) {
@@ -61,6 +82,29 @@ export function ContactForm({ lang }: { lang: Language }) {
   const [captchaRequired, setCaptchaRequired] = useState(false);
   const [captchaToken, setCaptchaToken] = useState("");
   const [captchaResetKey, setCaptchaResetKey] = useState(0);
+  const fallbackEmail =
+    process.env.NEXT_PUBLIC_CONTACT_FALLBACK_EMAIL?.trim() ||
+    "markus.oeffel@gmail.com";
+  const fallbackMailtoHref = useMemo(() => {
+    const subject = isCvRequest
+      ? lang === "de"
+        ? "CV-Anfrage über markusoeffel.com"
+        : "CV request via markusoeffel.com"
+      : lang === "de"
+        ? "Kontaktanfrage über markusoeffel.com"
+        : "Contact request via markusoeffel.com";
+    const body = [
+      `${lang === "de" ? "Name" : "Name"}: ${name.trim() || "-"}`,
+      `Email: ${email.trim() || "-"}`,
+      `${lang === "de" ? "Anliegen" : "Intent"}: ${intent}`,
+      `${lang === "de" ? "Unternehmen" : "Company"}: ${company.trim() || "-"}`,
+      "",
+      message.trim() || "-",
+    ].join("\n");
+    return `mailto:${encodeURIComponent(
+      fallbackEmail,
+    )}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  }, [company, email, fallbackEmail, intent, isCvRequest, lang, message, name]);
   const fieldClassName =
     "h-11 w-full rounded-xl border border-white/15 bg-[rgba(6,12,22,0.78)] px-3 text-sm outline-none transition focus:border-[var(--accent-cyan)]/70 focus:ring-2 focus:ring-[rgba(93,217,255,0.2)]";
   const textareaClassName =
@@ -68,15 +112,28 @@ export function ContactForm({ lang }: { lang: Language }) {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const normalizedEmail = email.trim();
+    if (!hasBasicPublicEmailShape(normalizedEmail)) {
+      setState({
+        kind: "error",
+        code: "validation_error",
+        message:
+          lang === "de"
+            ? "Bitte gültige E-Mail eingeben (z. B. name@firma.com)."
+            : "Please enter a valid email (e.g. name@company.com).",
+      });
+      return;
+    }
+
     setState({ kind: "submitting" });
 
     const res = await fetch("/api/contact", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        name,
-        email,
-        message,
+        name: name.trim(),
+        email: normalizedEmail,
+        message: message.trim(),
         company: company.trim() ? company : undefined,
         intent,
         captcha_token:
@@ -87,6 +144,7 @@ export function ContactForm({ lang }: { lang: Language }) {
     if (!res) {
       setState({
         kind: "error",
+        code: "network_error",
         message: lang === "de" ? "Netzwerkfehler." : "Network error.",
       });
       return;
@@ -101,6 +159,7 @@ export function ContactForm({ lang }: { lang: Language }) {
         setCaptchaRequired(true);
         setState({
           kind: "error",
+          code: "captcha_required",
           message:
             lang === "de"
               ? "Bitte Captcha bestätigen und erneut senden."
@@ -114,10 +173,46 @@ export function ContactForm({ lang }: { lang: Language }) {
         setCaptchaResetKey((k) => k + 1);
         setState({
           kind: "error",
+          code: "captcha_invalid",
           message:
             lang === "de"
               ? "Captcha ungültig. Bitte erneut versuchen."
               : "Invalid captcha. Please try again.",
+        });
+        return;
+      }
+
+      if (err?.error === "validation_error") {
+        const hasEmailIssue = Boolean(err.fields?.email?.length);
+        const hasNameIssue = Boolean(err.fields?.name?.length);
+        const hasMessageIssue = Boolean(err.fields?.message?.length);
+        setState({
+          kind: "error",
+          code: "validation_error",
+          message:
+            lang === "de"
+              ? hasEmailIssue
+                ? "Bitte gültige E-Mail eingeben (z. B. name@firma.com)."
+                : hasNameIssue || hasMessageIssue
+                  ? "Bitte Name und Nachricht vollständig ausfüllen."
+                  : "Eingaben sind nicht gültig. Bitte Formular prüfen."
+              : hasEmailIssue
+                ? "Please enter a valid email (e.g. name@company.com)."
+                : hasNameIssue || hasMessageIssue
+                  ? "Please complete name and message."
+                  : "Input is invalid. Please review the form.",
+        });
+        return;
+      }
+
+      if (err?.error === "rate_limited") {
+        setState({
+          kind: "error",
+          code: "rate_limited",
+          message:
+            lang === "de"
+              ? "Zu viele Anfragen in kurzer Zeit. Bitte in 1 Minute erneut versuchen."
+              : "Too many requests in a short time. Please retry in 1 minute.",
         });
         return;
       }
@@ -135,6 +230,7 @@ export function ContactForm({ lang }: { lang: Language }) {
 
         setState({
           kind: "error",
+          code: "provider_not_configured",
           message:
             lang === "de"
               ? missingInbox
@@ -164,6 +260,7 @@ export function ContactForm({ lang }: { lang: Language }) {
           detail.includes("unauthorized");
         setState({
           kind: "error",
+          code: "provider_error",
           message:
             lang === "de"
               ? likelyFromIssue
@@ -182,6 +279,7 @@ export function ContactForm({ lang }: { lang: Language }) {
 
       setState({
         kind: "error",
+        code: "unknown",
         message:
           lang === "de"
             ? "Konnte nicht senden."
@@ -326,6 +424,18 @@ export function ContactForm({ lang }: { lang: Language }) {
           <p className="rounded-full border border-red-400/35 bg-red-500/10 px-3 py-1 text-sm text-red-300">
             {state.message}
           </p>
+        ) : null}
+        {state.kind === "error" &&
+        (state.code === "provider_not_configured" ||
+          state.code === "provider_error") ? (
+          <a
+            href={fallbackMailtoHref}
+            className="inline-flex h-10 items-center justify-center rounded-full border border-[var(--accent-cyan)]/40 px-4 text-xs font-medium text-[var(--accent-cyan)] hover:border-[var(--accent-cyan)]/70 hover:bg-[rgba(53,242,209,0.1)]"
+          >
+            {lang === "de"
+              ? "Alternativ direkt per E-Mail senden"
+              : "Alternatively send directly by email"}
+          </a>
         ) : null}
       </div>
     </form>

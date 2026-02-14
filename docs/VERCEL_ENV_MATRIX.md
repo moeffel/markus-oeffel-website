@@ -31,6 +31,7 @@ Konkrete Belegung der Vercel-Umgebungen (Preview/Staging vs Production) inkl. Re
 | `CONTACT_FROM_EMAIL` oder `RESEND_FROM_EMAIL` | `<from@domain>` | `<from@domain>` |
 | `CONTACT_ALLOW_RESEND_ONBOARDING_FROM` | `true` (default) | `false` (empfohlen nach Setup) |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | `<turnstile-site-key>` | `<turnstile-site-key>` |
+| `NEXT_PUBLIC_CONTACT_FALLBACK_EMAIL` | `<public-contact-mail>` | `<public-contact-mail>` |
 | `TURNSTILE_SECRET_KEY` | `<turnstile-secret>` | `<turnstile-secret>` |
 | `SMTP_HOST` | `<smtp-host>` (falls kein Resend) | `<smtp-host>` (falls kein Resend) |
 | `SMTP_PORT` | `587` | `587` |

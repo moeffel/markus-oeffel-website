@@ -47,6 +47,16 @@ Stand: 2026-02-11
 - Ask-UI Prompts ergänzt:
   - zusätzliche Beispiel-Query für Education-Background in DE/EN (`src/app/[lang]/ask/ask-client.tsx`).
 
+## Neuer Ausbau-Loop (2026-02-14, Contact UX Robustness)
+
+- Contact-API liefert bei `validation_error` jetzt strukturierte Feldfehler (`fields`) statt nur generischem Fehlercode.
+- Contact-Form verbessert:
+  - frühe E-Mail-Validierung (z. B. verhindert Eingaben wie `max@muster`),
+  - gezielte Meldungen für `validation_error`, `rate_limited`, Captcha- und Provider-Fehler.
+  - bei Provider-Ausfällen wird ein vorbefüllter `mailto:`-Fallback angezeigt.
+- Neue optionale Public-Env ergänzt:
+  - `NEXT_PUBLIC_CONTACT_FALLBACK_EMAIL` für den Fallback-Link.
+
 ## Neuer Ausbau-Loop (2026-02-13, Design + Content Cleanup)
 
 - Landing auf „About me first“ geschärft:

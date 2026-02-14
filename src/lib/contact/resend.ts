@@ -27,6 +27,15 @@ function parseBooleanEnv(value: string | undefined, defaultValue: boolean): bool
   return defaultValue;
 }
 
+function firstNonEmpty(...values: Array<string | undefined>): string {
+  for (const value of values) {
+    if (typeof value !== "string") continue;
+    const trimmed = value.trim();
+    if (trimmed) return trimmed;
+  }
+  return "";
+}
+
 function buildSubject(input: ContactMailInput): string {
   return `Portfolio contact${input.intent ? ` (${input.intent})` : ""}: ${input.name}`;
 }
@@ -119,13 +128,27 @@ async function sendViaSmtp(input: {
 }
 
 export async function sendContactEmail(input: ContactMailInput): Promise<ContactSendResult> {
-  const to = process.env.CONTACT_TO_EMAIL?.trim() ?? "";
-  const resendFrom = process.env.CONTACT_FROM_EMAIL?.trim() ?? "";
+  const to = firstNonEmpty(
+    process.env.CONTACT_TO_EMAIL,
+    process.env.RESEND_TO_EMAIL,
+    process.env.SMTP_TO_EMAIL,
+  );
+  const allowResendFallbackFrom = parseBooleanEnv(
+    process.env.CONTACT_ALLOW_RESEND_ONBOARDING_FROM,
+    true,
+  );
+  const resendFrom = firstNonEmpty(
+    process.env.CONTACT_FROM_EMAIL,
+    process.env.RESEND_FROM_EMAIL,
+    allowResendFallbackFrom ? "onboarding@resend.dev" : "",
+  );
   const smtpFrom =
-    process.env.SMTP_FROM_EMAIL?.trim() ||
-    resendFrom ||
-    process.env.SMTP_USER?.trim() ||
-    "";
+    firstNonEmpty(
+      process.env.SMTP_FROM_EMAIL,
+      process.env.CONTACT_FROM_EMAIL,
+      process.env.RESEND_FROM_EMAIL,
+      process.env.SMTP_USER,
+    );
   if (!to) return { ok: false, error: "missing_contact_to" };
 
   const providerOrder: ContactProvider[] = (() => {
@@ -145,7 +168,7 @@ export async function sendContactEmail(input: ContactMailInput): Promise<Contact
         continue;
       }
       if (!resendFrom) {
-        details.push("CONTACT_FROM_EMAIL missing");
+        details.push("CONTACT_FROM_EMAIL / RESEND_FROM_EMAIL missing");
         continue;
       }
       attempted = true;

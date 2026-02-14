@@ -18,7 +18,7 @@ type ContactErrorResponse =
   | { error: "rate_limited" }
   | { error: "captcha_required" }
   | { error: "captcha_invalid"; codes?: string[] }
-  | { error: "provider_not_configured" }
+  | { error: "provider_not_configured"; detail?: string | null }
   | { error: "provider_error"; detail?: string | null };
 
 function parseIntent(
@@ -123,12 +123,30 @@ export function ContactForm({ lang }: { lang: Language }) {
       }
 
       if (err?.error === "provider_not_configured") {
+        const detail = (err.detail ?? "").toLowerCase();
+        const missingInbox =
+          detail.includes("missing_contact_to") ||
+          detail.includes("contact_to_email") ||
+          detail.includes("resend_to_email") ||
+          detail.includes("smtp_to_email");
+        const noProvider =
+          detail.includes("resend not configured") &&
+          detail.includes("smtp not configured");
+
         setState({
           kind: "error",
           message:
             lang === "de"
-              ? "Kontakt ist noch nicht komplett konfiguriert. Bitte später erneut versuchen."
-              : "Contact delivery is not fully configured yet. Please try again later.",
+              ? missingInbox
+                ? "Kontaktversand nicht aktiv: CONTACT_TO_EMAIL (oder RESEND_TO_EMAIL/SMTP_TO_EMAIL) fehlt."
+                : noProvider
+                  ? "Kontaktversand nicht aktiv: Weder Resend noch SMTP ist konfiguriert."
+                  : "Kontaktversand ist noch nicht konfiguriert (CONTACT_TO_EMAIL + Resend oder SMTP)."
+              : missingInbox
+                ? "Contact delivery inactive: CONTACT_TO_EMAIL (or RESEND_TO_EMAIL/SMTP_TO_EMAIL) is missing."
+                : noProvider
+                  ? "Contact delivery inactive: neither Resend nor SMTP is configured."
+                  : "Contact delivery is not configured yet (CONTACT_TO_EMAIL + Resend or SMTP).",
         });
         return;
       }

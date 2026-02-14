@@ -57,6 +57,25 @@
         color: #e6c78a;
         text-decoration: none;
       }
+      .btn-colab {
+        border-color: rgba(53, 242, 209, 0.55);
+        color: #35f2d1;
+      }
+      .preview-grid {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        margin-top: 12px;
+      }
+      .preview-item img {
+        width: 100%;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+      }
+      .preview-item p {
+        margin-top: 8px;
+        font-size: 14px;
+      }
       pre {
         padding: 16px;
         background: rgba(255, 255, 255, 0.06);
@@ -91,9 +110,13 @@
       <a class="btn" href="/notebooks/thesis-arima-garch-interview.ipynb">
         Download interview notebook (12 cells)
       </a>
+      <a class="btn btn-colab" href="https://colab.research.google.com/github/moeffel/markus-oeffel-website/blob/main/public/notebooks/thesis-arima-garch-walkthrough.ipynb" target="_blank" rel="noopener noreferrer">
+        Run it live in Google Colab
+      </a>
       <p>
         Use the full notebook for deep technical review and the interview version
-        for a concise 10-15 minute walkthrough.
+        for a concise 10-15 minute walkthrough. For a reproducible live run with
+        dependencies, use the Colab link.
       </p>
 
       <h2>Notebook flow</h2>
@@ -124,6 +147,26 @@
           Rolling backtests (60-day + 365-day robustness), horizon analysis,
           DM tests against naive/EWMA, and VaR backtests via Kupiec/Christoffersen.
         </p>
+      </div>
+
+      <h2>Static preview visuals (website layer)</h2>
+      <p>
+        These visuals are lightweight website previews. The live executable version
+        stays in the notebook/Colab flow.
+      </p>
+      <div class="preview-grid">
+        <div class="preview-item">
+          <img src="/thesis-preview/forecast-vs-naive.svg" alt="Forecast vs benchmark preview" />
+          <p>Forecast path: ARIMA-GARCH vs naive benchmark.</p>
+        </div>
+        <div class="preview-item">
+          <img src="/thesis-preview/horizon-dm-heatmap.svg" alt="Horizon signal heatmap preview" />
+          <p>Signal map by asset and horizon for DM-style comparison.</p>
+        </div>
+        <div class="preview-item">
+          <img src="/thesis-preview/var-exceptions.svg" alt="VaR exception chart preview" />
+          <p>Expected vs observed 5% VaR exceptions (sample).</p>
+        </div>
       </div>
 
       <h2>Code excerpt</h2>

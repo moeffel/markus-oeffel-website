@@ -19,9 +19,6 @@ Konkrete Belegung der Vercel-Umgebungen (Preview/Staging vs Production) inkl. Re
 | `NEXT_PUBLIC_SITE_URL` | `https://<staging-domain>` | `https://<prod-domain>` |
 | `WEBHOOK_HMAC_SECRET` | `<random-64hex>` | `<random-64hex>` |
 | `DRAFT_MODE_SECRET` | `<random-64hex>` | `<random-64hex>` |
-| `RESEND_API_KEY` | `<resend-api-key>` | `<resend-api-key>` |
-| `CONTACT_FROM_EMAIL` | `<from@domain>` | `<from@domain>` |
-| `CONTACT_TO_EMAIL` | `<inbox@domain>` | `<inbox@domain>` |
 | `CONTACT_PROVIDER` | `auto` | `auto` |
 | `ENABLE_PUBLIC_INDEXING` | `false` (oder leer) | `true` |
 
@@ -29,6 +26,10 @@ Konkrete Belegung der Vercel-Umgebungen (Preview/Staging vs Production) inkl. Re
 
 | Variable | Preview (Staging) | Production |
 |---|---|---|
+| `RESEND_API_KEY` | `<resend-api-key>` | `<resend-api-key>` |
+| `CONTACT_TO_EMAIL` oder `RESEND_TO_EMAIL` | `<inbox@domain>` | `<inbox@domain>` |
+| `CONTACT_FROM_EMAIL` oder `RESEND_FROM_EMAIL` | `<from@domain>` | `<from@domain>` |
+| `CONTACT_ALLOW_RESEND_ONBOARDING_FROM` | `true` (default) | `false` (empfohlen nach Setup) |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | `<turnstile-site-key>` | `<turnstile-site-key>` |
 | `TURNSTILE_SECRET_KEY` | `<turnstile-secret>` | `<turnstile-secret>` |
 | `SMTP_HOST` | `<smtp-host>` (falls kein Resend) | `<smtp-host>` (falls kein Resend) |
@@ -36,7 +37,8 @@ Konkrete Belegung der Vercel-Umgebungen (Preview/Staging vs Production) inkl. Re
 | `SMTP_SECURE` | `false` (oder `true` bei 465) | `false` (oder `true` bei 465) |
 | `SMTP_USER` | `<smtp-user>` | `<smtp-user>` |
 | `SMTP_PASS` | `<smtp-pass>` | `<smtp-pass>` |
-| `SMTP_FROM_EMAIL` | `<from@domain>` | `<from@domain>` |
+| `SMTP_FROM_EMAIL` oder `SMTP_USER` | `<from@domain>` | `<from@domain>` |
+| `SMTP_TO_EMAIL` | `<inbox@domain>` (optional alias) | `<inbox@domain>` (optional alias) |
 | `NEXT_PUBLIC_PLAUSIBLE_SRC` | `<plausible-script-url>` | `<plausible-script-url>` |
 | `NEXT_PUBLIC_PLAUSIBLE_DOMAIN` | `<staging-domain>` oder leer | `<prod-domain>` oder leer |
 | `OPENAI_API_KEY` | `<openai-key>` | `<openai-key>` |
@@ -96,6 +98,8 @@ Nutzen für `WEBHOOK_HMAC_SECRET` und `DRAFT_MODE_SECRET` (je Secret separat gen
 
 - `deploy:check` meldet fehlende Env-Werte → Variablen in Vercel fehlen oder sind nur in falscher Umgebung gesetzt.
 - Sitemap bleibt leer in Production → `ENABLE_PUBLIC_INDEXING` nicht auf `true` in Production.
-- Contact API `provider_not_configured` → `CONTACT_TO_EMAIL` fehlt oder weder Resend noch SMTP korrekt gesetzt.
+- Contact API `provider_not_configured` → prüfe zuerst `CONTACT_TO_EMAIL` (oder `RESEND_TO_EMAIL`/`SMTP_TO_EMAIL`) und dann mindestens einen Providerpfad:
+  - Resend: `RESEND_API_KEY` + (`CONTACT_FROM_EMAIL` oder `RESEND_FROM_EMAIL`)
+  - SMTP: `SMTP_HOST` + (`SMTP_FROM_EMAIL` oder `SMTP_USER`)
 - Contact API `provider_error` → Provider lehnt Versand ab (API-Key/Auth/From-Domain prüfen).
 - Ask API degradiert (`budget_exceeded`/`provider_error`) → Budget/Provider/DB prüfen.

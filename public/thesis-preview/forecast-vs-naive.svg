@@ -1,0 +1,27 @@
+<svg width="1200" height="700" viewBox="0 0 1200 700" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="700" fill="#0B1020"/>
+  <rect x="72" y="72" width="1056" height="556" rx="24" fill="#0E1428" stroke="rgba(255,255,255,0.14)"/>
+  <text x="118" y="142" fill="#EAF0FF" font-size="34" font-family="Inter, Arial, sans-serif" font-weight="600">Forecast track (sample): ARIMA-GARCH vs Naive</text>
+  <text x="118" y="178" fill="#B8C2DA" font-size="20" font-family="Inter, Arial, sans-serif">Illustrative 30-day out-of-sample path from thesis-style rolling setup.</text>
+
+  <line x1="140" y1="520" x2="1050" y2="520" stroke="rgba(255,255,255,0.18)" stroke-width="2"/>
+  <line x1="140" y1="240" x2="140" y2="520" stroke="rgba(255,255,255,0.18)" stroke-width="2"/>
+
+  <polyline points="160,470 200,455 240,448 280,430 320,422 360,415 400,396 440,392 480,378 520,366 560,352 600,344 640,330 680,322 720,306 760,298 800,284 840,270 880,260 920,244 960,232 1000,220"
+    fill="none" stroke="#35F2D1" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="160,474 200,470 240,463 280,456 320,451 360,446 400,438 440,434 480,425 520,416 560,404 600,398 640,389 680,382 720,370 760,364 800,352 840,343 880,334 920,321 960,314 1000,304"
+    fill="none" stroke="#7D8AA8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <circle cx="1000" cy="220" r="7" fill="#35F2D1"/>
+  <circle cx="1000" cy="304" r="7" fill="#7D8AA8"/>
+
+  <rect x="770" y="108" width="260" height="96" rx="14" fill="#121B33" stroke="rgba(255,255,255,0.12)"/>
+  <line x1="796" y1="140" x2="852" y2="140" stroke="#35F2D1" stroke-width="5" stroke-linecap="round"/>
+  <text x="866" y="146" fill="#EAF0FF" font-size="19" font-family="Inter, Arial, sans-serif">ARIMA-GARCH forecast</text>
+  <line x1="796" y1="174" x2="852" y2="174" stroke="#7D8AA8" stroke-width="5" stroke-linecap="round"/>
+  <text x="866" y="180" fill="#EAF0FF" font-size="19" font-family="Inter, Arial, sans-serif">Naive benchmark</text>
+
+  <text x="140" y="560" fill="#B8C2DA" font-size="16" font-family="Inter, Arial, sans-serif">t0</text>
+  <text x="520" y="560" fill="#B8C2DA" font-size="16" font-family="Inter, Arial, sans-serif">t+15</text>
+  <text x="988" y="560" fill="#B8C2DA" font-size="16" font-family="Inter, Arial, sans-serif">t+30</text>
+</svg>

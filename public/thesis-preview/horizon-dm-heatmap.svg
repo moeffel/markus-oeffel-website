@@ -1,0 +1,52 @@
+<svg width="1200" height="700" viewBox="0 0 1200 700" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="700" fill="#0B1020"/>
+  <rect x="72" y="72" width="1056" height="556" rx="24" fill="#0E1428" stroke="rgba(255,255,255,0.14)"/>
+  <text x="118" y="142" fill="#EAF0FF" font-size="34" font-family="Inter, Arial, sans-serif" font-weight="600">DM significance map by asset and horizon (sample)</text>
+  <text x="118" y="178" fill="#B8C2DA" font-size="20" font-family="Inter, Arial, sans-serif">Green = stronger signal vs benchmark, dark = weak/no signal.</text>
+
+  <text x="262" y="248" fill="#B8C2DA" font-size="18" font-family="Inter, Arial, sans-serif">1d</text>
+  <text x="386" y="248" fill="#B8C2DA" font-size="18" font-family="Inter, Arial, sans-serif">3d</text>
+  <text x="510" y="248" fill="#B8C2DA" font-size="18" font-family="Inter, Arial, sans-serif">7d</text>
+  <text x="634" y="248" fill="#B8C2DA" font-size="18" font-family="Inter, Arial, sans-serif">14d</text>
+  <text x="758" y="248" fill="#B8C2DA" font-size="18" font-family="Inter, Arial, sans-serif">30d</text>
+
+  <text x="160" y="302" fill="#EAF0FF" font-size="20" font-family="Inter, Arial, sans-serif" font-weight="600">BTC</text>
+  <text x="160" y="376" fill="#EAF0FF" font-size="20" font-family="Inter, Arial, sans-serif" font-weight="600">ETH</text>
+  <text x="160" y="450" fill="#EAF0FF" font-size="20" font-family="Inter, Arial, sans-serif" font-weight="600">DOGE</text>
+  <text x="160" y="524" fill="#EAF0FF" font-size="20" font-family="Inter, Arial, sans-serif" font-weight="600">SOL</text>
+
+  <rect x="244" y="270" width="96" height="56" rx="10" fill="#1B2640"/>
+  <rect x="368" y="270" width="96" height="56" rx="10" fill="#1F2D47"/>
+  <rect x="492" y="270" width="96" height="56" rx="10" fill="#2E4D5E"/>
+  <rect x="616" y="270" width="96" height="56" rx="10" fill="#375C66"/>
+  <rect x="740" y="270" width="96" height="56" rx="10" fill="#29465D"/>
+
+  <rect x="244" y="344" width="96" height="56" rx="10" fill="#1A243C"/>
+  <rect x="368" y="344" width="96" height="56" rx="10" fill="#1D2B42"/>
+  <rect x="492" y="344" width="96" height="56" rx="10" fill="#274A5B"/>
+  <rect x="616" y="344" width="96" height="56" rx="10" fill="#2B5060"/>
+  <rect x="740" y="344" width="96" height="56" rx="10" fill="#2A3D5A"/>
+
+  <rect x="244" y="418" width="96" height="56" rx="10" fill="#1A233A"/>
+  <rect x="368" y="418" width="96" height="56" rx="10" fill="#1D2D44"/>
+  <rect x="492" y="418" width="96" height="56" rx="10" fill="#284A60"/>
+  <rect x="616" y="418" width="96" height="56" rx="10" fill="#2C5168"/>
+  <rect x="740" y="418" width="96" height="56" rx="10" fill="#2A4461"/>
+
+  <rect x="244" y="492" width="96" height="56" rx="10" fill="#20384E"/>
+  <rect x="368" y="492" width="96" height="56" rx="10" fill="#2D5571"/>
+  <rect x="492" y="492" width="96" height="56" rx="10" fill="#4AA585"/>
+  <rect x="616" y="492" width="96" height="56" rx="10" fill="#5BCB93"/>
+  <rect x="740" y="492" width="96" height="56" rx="10" fill="#2E6078"/>
+
+  <rect x="892" y="278" width="188" height="250" rx="14" fill="#121B33" stroke="rgba(255,255,255,0.12)"/>
+  <text x="922" y="314" fill="#EAF0FF" font-size="18" font-family="Inter, Arial, sans-serif" font-weight="600">Legend</text>
+  <rect x="922" y="340" width="32" height="20" rx="6" fill="#1A233A"/>
+  <text x="966" y="355" fill="#B8C2DA" font-size="15" font-family="Inter, Arial, sans-serif">Low signal</text>
+  <rect x="922" y="376" width="32" height="20" rx="6" fill="#2E6078"/>
+  <text x="966" y="391" fill="#B8C2DA" font-size="15" font-family="Inter, Arial, sans-serif">Moderate</text>
+  <rect x="922" y="412" width="32" height="20" rx="6" fill="#4AA585"/>
+  <text x="966" y="427" fill="#B8C2DA" font-size="15" font-family="Inter, Arial, sans-serif">Strong</text>
+  <rect x="922" y="448" width="32" height="20" rx="6" fill="#5BCB93"/>
+  <text x="966" y="463" fill="#B8C2DA" font-size="15" font-family="Inter, Arial, sans-serif">Significant</text>
+</svg>

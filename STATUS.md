@@ -8,6 +8,34 @@ Stand: 2026-02-11
 - Spezifikation in `fintech-wow-portfolio-spec/SPEC/*` ist weiterhin mit `Status: Draft` markiert.
 - Git-Repository ist initialisiert, aber ohne Commit-Historie (alles aktuell uncommitted).
 
+## Neuer Ausbau-Loop (2026-02-14, Contact Mail Fix)
+
+- Contact-Service toleranter gemacht:
+  - Empfänger wird jetzt über `CONTACT_TO_EMAIL` **oder** Alias (`RESEND_TO_EMAIL`, `SMTP_TO_EMAIL`) akzeptiert.
+  - Resend-Sender kann über `CONTACT_FROM_EMAIL` **oder** `RESEND_FROM_EMAIL` gesetzt werden.
+  - Optionaler Fallback `CONTACT_ALLOW_RESEND_ONBOARDING_FROM=true` erlaubt `onboarding@resend.dev` für initiale Tests.
+- Contact-API-Diagnostik verbessert:
+  - bei `CONTACT_DEBUG_ERRORS=1` liefert `/api/contact` bei `provider_not_configured` jetzt auch `detail`.
+  - Frontend-Fehlermeldungen unterscheiden fehlende Inbox vs. fehlenden Provider.
+- Deploy-/Setup-Doku korrigiert:
+  - `.env.example`, `README.md`, `docs/VERCEL_ENV_MATRIX.md`, `docs/STAGING_ENV_RUNBOOK.md` auf Alias-/Fallback-Logik angepasst.
+  - `scripts/deploy-readiness.mjs` prüft jetzt korrekt „Resend **oder** SMTP“ statt fälschlich zwingend Resend.
+
+## Neuer Ausbau-Loop (2026-02-14, Thesis Live-Run + Preview Visuals)
+
+- Thesis-Seite erweitert:
+  - neue CTA `Run it live (Colab)` direkt auf der Thesis-Detailseite.
+  - neue Sektion mit statischen Mustergrafiken als recruiter-friendly Preview-Layer.
+  - neue Sektion „Run it live“ mit klaren Schritten (Open → Setup → Run).
+- Notebook-Landing (`public/notebook.html`) erweitert:
+  - Colab-Button ergänzt (direkter Live-Run aus GitHub-Notebook).
+  - statische Preview-Galerie mit drei Visuals ergänzt.
+- Neue Visual-Assets ergänzt:
+  - `public/thesis-preview/forecast-vs-naive.svg`
+  - `public/thesis-preview/horizon-dm-heatmap.svg`
+  - `public/thesis-preview/var-exceptions.svg`
+- Thesis-Projektlinks um Colab-Link ergänzt (`src/lib/content/data.ts`).
+
 ## Neuer Ausbau-Loop (2026-02-13, Design + Content Cleanup)
 
 - Landing auf „About me first“ geschärft:

@@ -19,6 +19,9 @@ type ThesisResultRow = {
   archLmP: string;
 };
 
+const THESIS_COLAB_URL =
+  "https://colab.research.google.com/github/moeffel/markus-oeffel-website/blob/main/public/notebooks/thesis-arima-garch-walkthrough.ipynb";
+
 const THESIS_RESULT_ROWS: readonly ThesisResultRow[] = [
   {
     asset: "BTC",
@@ -68,6 +71,52 @@ const HORIZON_SIGNALS: Record<Language, readonly string[]> = {
     "SOL shows significant return signals in multi-horizon evaluation (h=7: p=0.030, h=14: p=0.026).",
     "BTC and SOL provide selective medium-horizon improvements over the naive benchmark.",
     "For ETH, the 365-day robustness window provides more stable VaR behavior than the 60-day setup.",
+  ],
+};
+
+const THESIS_PREVIEW_VISUALS: Record<
+  Language,
+  ReadonlyArray<{ src: string; title: string; caption: string }>
+> = {
+  de: [
+    {
+      src: "/thesis-preview/forecast-vs-naive.svg",
+      title: "Forecast vs. Benchmark",
+      caption:
+        "Vergleichspfad von ARIMA-GARCH gegen Naive-Benchmark im Out-of-sample-Setup.",
+    },
+    {
+      src: "/thesis-preview/horizon-dm-heatmap.svg",
+      title: "Horizon Signal Map",
+      caption:
+        "Heatmap je Asset/Horizont für relative Signalstärke in der DM-Auswertung.",
+    },
+    {
+      src: "/thesis-preview/var-exceptions.svg",
+      title: "VaR Exceptions",
+      caption:
+        "Expected vs observed 5%-VaR Treffer als kompakte Risiko-Validierungsansicht.",
+    },
+  ],
+  en: [
+    {
+      src: "/thesis-preview/forecast-vs-naive.svg",
+      title: "Forecast vs benchmark",
+      caption:
+        "Illustrative ARIMA-GARCH path against a naive baseline in out-of-sample mode.",
+    },
+    {
+      src: "/thesis-preview/horizon-dm-heatmap.svg",
+      title: "Horizon signal map",
+      caption:
+        "Asset/horizon heatmap for relative signal strength in DM evaluation.",
+    },
+    {
+      src: "/thesis-preview/var-exceptions.svg",
+      title: "VaR exceptions",
+      caption:
+        "Expected vs observed 5% VaR hits as a compact risk validation snapshot.",
+    },
   ],
 };
 
@@ -155,6 +204,14 @@ export default async function ThesisPage({
               {lang === "de" ? "Notebook ansehen" : "View notebook"}
             </a>
           ) : null}
+          <a
+            href={THESIS_COLAB_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-11 items-center justify-center rounded-full border border-[var(--accent-cyan)]/45 px-6 text-sm font-medium text-[var(--accent-cyan)] hover:border-[var(--accent-cyan)]/70 hover:bg-[rgba(53,242,209,0.1)]"
+          >
+            {lang === "de" ? "Run it live (Colab)" : "Run it live (Colab)"}
+          </a>
         </div>
       </header>
 
@@ -254,6 +311,31 @@ export default async function ThesisPage({
 
       <section className="rounded-3xl border border-black/5 p-6 dark:border-white/10">
         <h2 className="text-xl font-semibold tracking-tight">
+          {lang === "de" ? "Static preview visuals" : "Static preview visuals"}
+        </h2>
+        <p className="mt-3 max-w-4xl text-sm text-foreground/75">
+          {lang === "de"
+            ? "Diese Mustergrafiken zeigen die Darstellung auf der Website. Die komplette reproduzierbare Ausführung läuft im Colab-Notebook."
+            : "These sample visuals show the website preview layer. Full reproducible execution runs in the Colab notebook."}
+        </p>
+        <div className="mt-5 grid gap-5 xl:grid-cols-3">
+          {THESIS_PREVIEW_VISUALS[lang].map((item) => (
+            <article
+              key={item.src}
+              className="overflow-hidden rounded-2xl border border-black/5 bg-black/[0.02] dark:border-white/10 dark:bg-white/[0.02]"
+            >
+              <img src={item.src} alt={item.title} className="h-auto w-full border-b border-black/5 dark:border-white/10" />
+              <div className="space-y-2 p-4">
+                <h3 className="text-sm font-semibold tracking-tight">{item.title}</h3>
+                <p className="text-xs text-foreground/70">{item.caption}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-black/5 p-6 dark:border-white/10">
+        <h2 className="text-xl font-semibold tracking-tight">
           {lang === "de" ? "Interpretation" : "Interpretation"}
         </h2>
         <ul className="mt-4 list-disc space-y-2 pl-5 text-foreground/80">
@@ -288,6 +370,44 @@ export default async function ThesisPage({
               : "Visuals are included in the PDF/notebook."}
           </p>
         )}
+      </section>
+
+      <section className="rounded-3xl border border-black/5 p-6 dark:border-white/10">
+        <h2 className="text-xl font-semibold tracking-tight">
+          {lang === "de" ? "Run it live (Colab)" : "Run it live (Colab)"}
+        </h2>
+        <p className="mt-3 max-w-3xl text-foreground/80">
+          {lang === "de"
+            ? "Für Recruiter und Interviewer: direkter Start in Colab mit Dependencies, Walkthrough-Zellen und reproduzierbarem Ablauf."
+            : "For recruiters and interviewers: direct Colab launch with dependencies, walkthrough cells, and reproducible execution flow."}
+        </p>
+        <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm text-foreground/80">
+          <li>
+            {lang === "de"
+              ? "Notebook in Colab öffnen."
+              : "Open the notebook in Colab."}
+          </li>
+          <li>
+            {lang === "de"
+              ? "Setup-Zellen für Libraries und Konfiguration ausführen."
+              : "Run setup cells for libraries and configuration."}
+          </li>
+          <li>
+            {lang === "de"
+              ? "Daten laden und die Sequenz Data → Diagnostics → Models → Backtests durchlaufen."
+              : "Run data loading and the sequence Data → Diagnostics → Models → Backtests."}
+          </li>
+        </ol>
+        <div className="mt-5">
+          <a
+            href={THESIS_COLAB_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-11 items-center justify-center rounded-full bg-gradient-to-r from-[var(--accent-cyan)] to-[var(--accent-magenta)] px-6 text-sm font-semibold text-[#070a0f] hover:brightness-110"
+          >
+            {lang === "de" ? "Notebook live ausführen" : "Run notebook live"}
+          </a>
+        </div>
       </section>
 
       <section>

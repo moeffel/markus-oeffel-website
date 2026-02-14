@@ -29,6 +29,8 @@ Notes:
 - For production/staging you should set all required env vars.
 - The default landing photo path is `public/profile.jpeg` (`NEXT_PUBLIC_PROFILE_PHOTO=/profile.jpeg`).
 - Contact delivery can run via `RESEND_API_KEY` **or** SMTP (`SMTP_HOST` + credentials). Use `CONTACT_PROVIDER=auto` to try both.
+- Recipient can be configured via `CONTACT_TO_EMAIL` (or aliases `RESEND_TO_EMAIL` / `SMTP_TO_EMAIL`).
+- Sender can be configured via `CONTACT_FROM_EMAIL` (or alias `RESEND_FROM_EMAIL`); optional fallback is `CONTACT_ALLOW_RESEND_ONBOARDING_FROM=true`.
 
 3. Run dev server:
 

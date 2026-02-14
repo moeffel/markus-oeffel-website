@@ -265,6 +265,10 @@ const caseStudies = z.array(caseStudySchema).parse([
       { label: "Thesis PDF", url: "https://markusoeffel.com/thesis.pdf" },
       { label: "Notebook walkthrough", url: "https://markusoeffel.com/notebook.html" },
       {
+        label: "Run it live (Colab)",
+        url: "https://colab.research.google.com/github/moeffel/markus-oeffel-website/blob/main/public/notebooks/thesis-arima-garch-walkthrough.ipynb",
+      },
+      {
         label: "Notebook source (full .ipynb)",
         url: "https://markusoeffel.com/notebooks/thesis-arima-garch-walkthrough.ipynb",
       },

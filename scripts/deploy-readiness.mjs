@@ -98,9 +98,6 @@ function checkRequiredEnv() {
     "NEXT_PUBLIC_SITE_URL",
     "WEBHOOK_HMAC_SECRET",
     "DRAFT_MODE_SECRET",
-    "RESEND_API_KEY",
-    "CONTACT_FROM_EMAIL",
-    "CONTACT_TO_EMAIL",
   ];
 
   for (const key of required) {
@@ -113,6 +110,66 @@ function checkRequiredEnv() {
       action: `Setze ${key} in Deployment-Secrets/Env.`,
     });
   }
+
+  const contactToKeys = ["CONTACT_TO_EMAIL", "RESEND_TO_EMAIL", "SMTP_TO_EMAIL"];
+  const hasContactTo = contactToKeys.some((key) => Boolean(resolveValue(env, key)));
+  addCheck({
+    id: "env:contact-to",
+    phase: "soft",
+    severity: "critical",
+    ok: hasContactTo,
+    message: "Contact-Zieladresse gesetzt (CONTACT_TO_EMAIL / RESEND_TO_EMAIL / SMTP_TO_EMAIL)",
+    action:
+      "Setze CONTACT_TO_EMAIL (oder RESEND_TO_EMAIL/SMTP_TO_EMAIL) auf die Inbox für Kontaktanfragen.",
+  });
+
+  const contactFrom = resolveValue(env, "CONTACT_FROM_EMAIL");
+  const resendFrom = resolveValue(env, "RESEND_FROM_EMAIL");
+  const smtpFrom = resolveValue(env, "SMTP_FROM_EMAIL");
+  const smtpUser = resolveValue(env, "SMTP_USER");
+  const smtpHost = resolveValue(env, "SMTP_HOST");
+  const resendApiKey = resolveValue(env, "RESEND_API_KEY");
+  const resendFallbackRaw = resolveValue(
+    env,
+    "CONTACT_ALLOW_RESEND_ONBOARDING_FROM",
+  );
+  const allowResendOnboardingFallback =
+    resendFallbackRaw === null ? true : isTruthy(resendFallbackRaw);
+
+  const resendReady = Boolean(
+    resendApiKey && (contactFrom || resendFrom || allowResendOnboardingFallback),
+  );
+  const smtpReady = Boolean(smtpHost && (smtpFrom || contactFrom || resendFrom || smtpUser));
+
+  addCheck({
+    id: "env:contact-provider-ready",
+    phase: "soft",
+    severity: "critical",
+    ok: resendReady || smtpReady,
+    message: "Mindestens ein Contact-Provider vollständig konfiguriert",
+    action:
+      "Resend: RESEND_API_KEY + CONTACT_FROM_EMAIL/RESEND_FROM_EMAIL. SMTP: SMTP_HOST + SMTP_FROM_EMAIL/SMTP_USER.",
+  });
+
+  addCheck({
+    id: "env:contact-from-explicit",
+    phase: "soft",
+    severity: "recommended",
+    ok: Boolean(contactFrom || resendFrom || smtpFrom),
+    message: "Expliziter Absender gesetzt",
+    action:
+      "Setze CONTACT_FROM_EMAIL (oder RESEND_FROM_EMAIL/SMTP_FROM_EMAIL), um onboarding@resend.dev-Fallback zu vermeiden.",
+  });
+
+  const contactProvider = (resolveValue(env, "CONTACT_PROVIDER") ?? "auto").toLowerCase();
+  addCheck({
+    id: "env:contact-provider-mode",
+    phase: "soft",
+    severity: "recommended",
+    ok: ["auto", "resend", "smtp"].includes(contactProvider),
+    message: "CONTACT_PROVIDER ist gültig (auto/resend/smtp)",
+    action: "Setze CONTACT_PROVIDER auf auto, resend oder smtp.",
+  });
 
   const siteUrl = resolveValue(env, "NEXT_PUBLIC_SITE_URL");
   const isLocalhost =

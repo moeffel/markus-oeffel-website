@@ -79,17 +79,24 @@ export async function POST(request: Request) {
       detail: sent.detail ?? null,
     });
 
+    const exposeProviderDetail = process.env.CONTACT_DEBUG_ERRORS === "1";
+
     if (
       sent.error === "provider_not_configured" ||
       sent.error === "missing_contact_to"
     ) {
+      if (exposeProviderDetail) {
+        return NextResponse.json(
+          { error: "provider_not_configured", detail: sent.detail ?? null },
+          { status: 503 },
+        );
+      }
       return NextResponse.json(
         { error: "provider_not_configured" },
         { status: 503 },
       );
     }
 
-    const exposeProviderDetail = process.env.CONTACT_DEBUG_ERRORS === "1";
     if (exposeProviderDetail) {
       return NextResponse.json(
         { error: "provider_error", detail: sent.detail ?? null },

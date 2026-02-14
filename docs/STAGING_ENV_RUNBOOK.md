@@ -18,13 +18,13 @@ Detail-Matrix für Vercel-Env-Werte: `docs/VERCEL_ENV_MATRIX.md`.
 - `NEXT_PUBLIC_SITE_URL` (echte Staging-Domain, nicht localhost)
 - `WEBHOOK_HMAC_SECRET`
 - `DRAFT_MODE_SECRET`
-- `CONTACT_FROM_EMAIL`
-- `CONTACT_TO_EMAIL`
+- `CONTACT_TO_EMAIL` (alternativ `RESEND_TO_EMAIL` oder `SMTP_TO_EMAIL`)
 - **Mindestens ein Mail-Provider:**
-  - `RESEND_API_KEY` **oder**
-  - `SMTP_HOST` + `SMTP_PORT` + `SMTP_USER` + `SMTP_PASS` (+ optional `SMTP_FROM_EMAIL`)
+  - **Resend**: `RESEND_API_KEY` + (`CONTACT_FROM_EMAIL` oder `RESEND_FROM_EMAIL`) **oder**
+  - **SMTP**: `SMTP_HOST` + `SMTP_PORT` + (`SMTP_FROM_EMAIL` oder `SMTP_USER`) + optional `SMTP_PASS`
 
 Optional:
+- `CONTACT_ALLOW_RESEND_ONBOARDING_FROM=true` (default): Fallback auf `onboarding@resend.dev`, falls kein `*_FROM_EMAIL` gesetzt ist.
 - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` + `TURNSTILE_SECRET_KEY`
 - `OPENAI_API_KEY` + `SUPABASE_DB_URL`/`DATABASE_URL` (für volle RAG-Antworten)
 - `NEXT_PUBLIC_PLAUSIBLE_SRC`

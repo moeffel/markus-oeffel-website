@@ -90,6 +90,7 @@ type QueryIntent = {
   website: boolean;
   rag: boolean;
   profile: boolean;
+  sensitivePersonal: boolean;
   stepByStep: boolean;
   contact: boolean;
   legal: boolean;
@@ -237,7 +238,38 @@ function parseQueryIntent(input: {
       "rolle",
       "station",
     ]) ||
-    hasPhrase(["who are you", "tell me about yourself", "what was your profession"]);
+    hasPhrase([
+      "who are you",
+      "tell me about yourself",
+      "wer bist du",
+      "what was your profession",
+    ]);
+
+  const sensitivePersonal =
+    hasToken([
+      "alt",
+      "age",
+      "born",
+      "geburt",
+      "geburtsdatum",
+      "birthday",
+      "birth",
+      "wohnort",
+      "adresse",
+      "address",
+      "telefon",
+      "phone",
+      "familie",
+      "family",
+    ]) ||
+    hasPhrase([
+      "wie alt",
+      "how old",
+      "date of birth",
+      "where do you live",
+      "wo wohnst du",
+      "what is your address",
+    ]);
 
   const stepByStep =
     hasToken(["step", "steps", "methode", "method", "ablauf", "setup"]) ||
@@ -253,7 +285,18 @@ function parseQueryIntent(input: {
 
   const years = extractYearTokens(normalizedQuery);
 
-  return { skills, thesis, website, rag, profile, stepByStep, contact, legal, years };
+  return {
+    skills,
+    thesis,
+    website,
+    rag,
+    profile,
+    sensitivePersonal,
+    stepByStep,
+    contact,
+    legal,
+    years,
+  };
 }
 
 function classifyDocGroup(docId: string): string {
@@ -356,14 +399,16 @@ function parseOptionalNumber(value: string | undefined): number | null {
   return n;
 }
 
+type ScoredCandidate = {
+  chunk: RagChunkRow;
+  cosineSimilarity: number;
+  lexical: number;
+  coverage: number;
+  score: number;
+};
+
 function selectDiverse(
-  sorted: Array<{
-    chunk: RagChunkRow;
-    cosineSimilarity: number;
-    lexical: number;
-    coverage: number;
-    score: number;
-  }>,
+  sorted: ScoredCandidate[],
   input: { k: number; maxPerDoc: number; intent: QueryIntent },
 ): RagChunkRow[] {
   const byDoc = new Map<string, number>();
@@ -385,6 +430,99 @@ function selectDiverse(
   }
 
   return out;
+}
+
+function hasSufficientVectorEvidence(input: {
+  query: string;
+  queryTokens: readonly string[];
+  intent: QueryIntent;
+  selected: readonly ScoredCandidate[];
+}): boolean {
+  if (input.selected.length === 0) return false;
+
+  const nonLanding = input.selected.filter((item) => {
+    const group = classifyDocGroup(item.chunk.doc_id);
+    return group !== "landing" && group !== "other";
+  });
+  if (nonLanding.length === 0) return false;
+
+  const maxLexical = Math.max(0, ...nonLanding.map((item) => item.lexical));
+  const maxCoverage = Math.max(0, ...nonLanding.map((item) => item.coverage));
+  const hasStrongHit = nonLanding.some(
+    (item) =>
+      item.lexical >= 0.66 ||
+      item.coverage >= 0.66 ||
+      (item.lexical >= 0.5 && item.coverage >= 0.34),
+  );
+
+  if (input.queryTokens.length === 1 && maxLexical < 1 && maxCoverage < 1) {
+    return false;
+  }
+
+  if (
+    input.queryTokens.length >= 2 &&
+    maxLexical < 0.66 &&
+    maxCoverage < 0.66 &&
+    !hasStrongHit
+  ) {
+    return false;
+  }
+
+  if (input.queryTokens.length >= 4 && !hasStrongHit) {
+    return false;
+  }
+
+  if (input.intent.sensitivePersonal) {
+    const hasSensitiveEvidence = nonLanding.some((item) =>
+      /(age|alt|born|birth|geburt|geburtsdatum|birthday|wohnort|address|adresse|telefon|phone)/i.test(
+        `${item.chunk.title}\n${item.chunk.section_id}\n${item.chunk.content}`,
+      ),
+    );
+    if (!hasSensitiveEvidence) return false;
+  }
+
+  if (input.intent.profile && input.intent.years.length > 0) {
+    const hasExperienceYearEvidence = nonLanding.some((item) => {
+      if (!item.chunk.doc_id.startsWith("experience:")) return false;
+      return input.intent.years.some((year) =>
+        `${item.chunk.title}\n${item.chunk.section_id}\n${item.chunk.content}`.includes(year),
+      );
+    });
+    if (!hasExperienceYearEvidence) return false;
+  }
+
+  if (input.intent.skills) {
+    const hasSkillEvidence = nonLanding.some(
+      (item) =>
+        item.chunk.doc_id.startsWith("skills:") &&
+        (item.lexical >= 0.34 || item.coverage >= 0.34),
+    );
+    if (!hasSkillEvidence) return false;
+  }
+
+  if (input.intent.thesis) {
+    const hasThesisEvidence = nonLanding.some(
+      (item) =>
+        ["thesis", "case_study"].includes(classifyDocGroup(item.chunk.doc_id)) &&
+        (item.lexical >= 0.34 || item.coverage >= 0.34),
+    );
+    if (!hasThesisEvidence) return false;
+  }
+
+  const normalized = normalize(input.query);
+  const asksAge = /\b(wie alt|how old|date of birth|geburtsdatum|birthday|birth)\b/.test(
+    normalized,
+  );
+  if (asksAge) {
+    const hasAgeEvidence = nonLanding.some((item) =>
+      /(age|alt|born|birth|geburt|geburtsdatum|birthday)/i.test(
+        `${item.chunk.title}\n${item.chunk.content}`,
+      ),
+    );
+    if (!hasAgeEvidence) return false;
+  }
+
+  return true;
 }
 
 function pickProfileChunks(input: {
@@ -483,7 +621,7 @@ export async function retrieveRagContext(input: {
     queryTokens,
   });
 
-  const scored = candidates
+  const scored: ScoredCandidate[] = candidates
     .map((chunk) => {
       const cosineSimilarity = cosineSimilarityFromDistance(chunk.distance);
       const textForLexical = `${chunk.title}\n${chunk.section_id}\n${chunk.content}`;
@@ -516,6 +654,22 @@ export async function retrieveRagContext(input: {
     chunks: selectedRaw,
     intent,
   });
+
+  const scoredById = new Map(scored.map((item) => [item.chunk.id, item]));
+  const selectedScored = selected
+    .map((chunk) => scoredById.get(chunk.id))
+    .filter((item): item is ScoredCandidate => Boolean(item));
+
+  if (
+    !hasSufficientVectorEvidence({
+      query: input.query,
+      queryTokens,
+      intent,
+      selected: selectedScored,
+    })
+  ) {
+    return { chunks: [], citations: [], suggested_links: [], sources: "" };
+  }
 
   const sources = selected
     .map((c, idx) => {

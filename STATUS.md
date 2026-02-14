@@ -26,6 +26,21 @@ Stand: 2026-02-11
   - `private_corpus/about_me_rag.md` als strukturierte private Wissensbasis aktualisiert (gitignored).
   - `private_corpus/about_me_rag.example.md` und `private_corpus/README.md` konkretisiert.
 
+## Neuer Ausbau-Loop (2026-02-14, RAG Evidence Guardrails)
+
+- Ask-Antwortqualität gehärtet:
+  - neue Evidence-Gates im Corpus-Fallback (`src/lib/ask/answer.ts`), damit bei schwacher Relevanz nicht mehr mit generischen/unsauberen Aussagen geantwortet wird.
+  - explizite `noEvidenceResult`-Antwort eingeführt („keine belastbare Information“ statt Spekulation).
+  - sensitive Personalfragen (z. B. Alter/Geburtsdaten) geben ohne Beleg nun sauber „nicht gefunden“ zurück.
+- Vector-RAG-Retrieval abgesichert:
+  - `src/lib/rag/retrieval.ts` nutzt zusätzliche Suffizienzprüfung vor LLM-Generierung.
+  - bei schwachen Treffern wird kein Kontext an den LLM weitergereicht (verhindert Halluzinationsantworten).
+- RAG/Ask Konsistenz:
+  - `src/lib/rag/ask.ts` auf `noEvidenceResult` umgestellt.
+- Playwright-Validierung:
+  - Ask-UI mit Query `wie alt bist du?` getestet; Ergebnis korrekt als „keine belastbare Information“.
+  - Artefakt: `output/playwright/ask-age-no-evidence.png`.
+
 ## Neuer Ausbau-Loop (2026-02-13)
 
 - RAG-Qualität für Karrierefragen geschärft:

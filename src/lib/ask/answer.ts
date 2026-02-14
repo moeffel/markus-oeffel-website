@@ -48,6 +48,7 @@ type QueryIntent = {
   website: boolean;
   rag: boolean;
   profile: boolean;
+  sensitivePersonal: boolean;
   stepByStep: boolean;
   contact: boolean;
   legal: boolean;
@@ -315,7 +316,34 @@ function parseQueryIntent(input: {
     hasPhrase([
       "who are you",
       "tell me about yourself",
+      "wer bist du",
       "what was your profession",
+    ]);
+
+  const sensitivePersonal =
+    hasToken([
+      "alt",
+      "age",
+      "born",
+      "geburt",
+      "geburtsdatum",
+      "birthday",
+      "birth",
+      "wohnort",
+      "adresse",
+      "address",
+      "telefon",
+      "phone",
+      "familie",
+      "family",
+    ]) ||
+    hasPhrase([
+      "wie alt",
+      "how old",
+      "date of birth",
+      "where do you live",
+      "wo wohnst du",
+      "what is your address",
     ]);
 
   const stepByStep =
@@ -330,7 +358,18 @@ function parseQueryIntent(input: {
 
   const years = extractYearTokens(normalizedQuery);
 
-  return { skills, thesis, website, rag, profile, stepByStep, contact, legal, years };
+  return {
+    skills,
+    thesis,
+    website,
+    rag,
+    profile,
+    sensitivePersonal,
+    stepByStep,
+    contact,
+    legal,
+    years,
+  };
 }
 
 function classifyDocGroup(docId: string): string {
@@ -537,6 +576,7 @@ function rankCorpus(input: {
         website: false,
         rag: false,
         profile: false,
+        sensitivePersonal: false,
         stepByStep: false,
         contact: false,
         legal: false,
@@ -561,6 +601,131 @@ function rankCorpus(input: {
     ranked: diversifyRankedChunks({ ranked, intent }),
     intent,
   };
+}
+
+type MatchStats = {
+  exact: number;
+  partial: number;
+  exactRatio: number;
+  group: string;
+};
+
+function computeMatchStats(input: {
+  queryTokens: readonly string[];
+  chunk: CorpusChunk;
+}): MatchStats {
+  const chunkTokens = toTokens(
+    `${input.chunk.title} ${input.chunk.sectionId} ${input.chunk.text}`,
+  );
+  const chunkTokenSet = new Set(chunkTokens);
+
+  let exact = 0;
+  let partial = 0;
+  for (const token of input.queryTokens) {
+    if (chunkTokenSet.has(token)) exact += 1;
+    else if (hasPrefixMatch(token, chunkTokens)) partial += 1;
+  }
+
+  const exactRatio =
+    input.queryTokens.length > 0 ? exact / input.queryTokens.length : 0;
+
+  return {
+    exact,
+    partial,
+    exactRatio,
+    group: classifyDocGroup(input.chunk.docId),
+  };
+}
+
+function hasSufficientEvidence(input: {
+  query: string;
+  queryTokens: readonly string[];
+  intent: QueryIntent;
+  ranked: readonly RankedChunk[];
+}): boolean {
+  if (input.ranked.length === 0) return false;
+
+  const inspected = input.ranked.slice(0, 8);
+  const stats = inspected.map((entry) =>
+    computeMatchStats({ queryTokens: input.queryTokens, chunk: entry.chunk }),
+  );
+  const nonLandingStats = stats.filter(
+    (entry) => entry.group !== "landing" && entry.group !== "other",
+  );
+
+  if (nonLandingStats.length === 0) return false;
+
+  const maxExact = Math.max(0, ...nonLandingStats.map((entry) => entry.exact));
+  const maxExactRatio = Math.max(
+    0,
+    ...nonLandingStats.map((entry) => entry.exactRatio),
+  );
+  const hasStrongMatch = nonLandingStats.some(
+    (entry) =>
+      entry.exact >= 2 ||
+      entry.exactRatio >= 0.66 ||
+      (entry.exact >= 1 && entry.partial >= 1),
+  );
+
+  if (input.queryTokens.length === 1 && maxExact < 1) {
+    return false;
+  }
+
+  if (input.queryTokens.length >= 2 && maxExact < 2 && maxExactRatio < 0.66) {
+    return false;
+  }
+
+  if (input.queryTokens.length >= 4 && !hasStrongMatch) {
+    return false;
+  }
+
+  if (input.intent.profile && input.intent.years.length > 0) {
+    const hasExperienceYearEvidence = input.ranked.some(
+      (entry) =>
+        entry.chunk.docId.startsWith("experience:") &&
+        input.intent.years.some((year) =>
+          `${entry.chunk.title}\n${entry.chunk.text}`.includes(year),
+        ),
+    );
+    if (!hasExperienceYearEvidence) return false;
+  }
+
+  if (input.intent.skills) {
+    const hasSkillEvidence = input.ranked.some((entry) => {
+      if (!entry.chunk.docId.startsWith("skills:")) return false;
+      const match = computeMatchStats({
+        queryTokens: input.queryTokens,
+        chunk: entry.chunk,
+      });
+      return match.exact >= 1 || match.partial >= 1;
+    });
+    if (!hasSkillEvidence) return false;
+  }
+
+  if (input.intent.thesis) {
+    const hasThesisEvidence = input.ranked.some((entry) => {
+      if (!["thesis", "case_study"].includes(classifyDocGroup(entry.chunk.docId))) {
+        return false;
+      }
+      const match = computeMatchStats({
+        queryTokens: input.queryTokens,
+        chunk: entry.chunk,
+      });
+      return match.exact >= 1 || match.partial >= 1;
+    });
+    if (!hasThesisEvidence) return false;
+  }
+
+  if (input.intent.sensitivePersonal) {
+    const hasSensitiveEvidence = input.ranked.some((entry) =>
+      /(age|alt|born|birth|geburt|geburtsdatum|birthday|wohnort|address|adresse|telefon|phone)/i.test(
+        `${entry.chunk.title}\n${entry.chunk.text}`,
+      ),
+    );
+    if (!hasSensitiveEvidence) return false;
+  }
+
+  return true;
 }
 
 function chunkCaseStudy(caseStudy: CaseStudy, lang: Language): CorpusChunk[] {
@@ -1301,12 +1466,12 @@ function buildLocalAnswer(input: {
   });
 }
 
-function emptyResult(lang: Language): AskResponse {
+export function noEvidenceResult(lang: Language): AskResponse {
   return {
     answer:
       lang === "de"
-        ? "Ich kann nur aus diesem Portfolio beantworten. Frag z. B. zu Masterarbeit, Studieninhalten, Zertifikaten oder Projekten."
-        : "I can only answer from this portfolio. Try asking about the thesis, degree content, certificates, or projects.",
+        ? "Dazu finde ich in meinen Quellen aktuell **keine belastbare Information**. Ich antworte lieber nicht spekulativ.\n\nFrag mich stattdessen z. B. zu Werdegang, Masterarbeit, Zertifikaten, Skills oder Projekten."
+        : "I currently have **no reliable evidence** for that in my sources. I prefer not to guess.\n\nAsk me instead about career timeline, thesis, certificates, skills, or projects.",
     citations: [],
     suggested_links: [
       { label: lang === "de" ? "Projekte" : "Projects", href: `/${lang}/projects` },
@@ -1341,7 +1506,19 @@ export async function answerFromCorpus(input: {
   }
 
   if (ranked.length === 0) {
-    return emptyResult(input.lang);
+    return noEvidenceResult(input.lang);
+  }
+
+  const queryTokens = toTokens(query);
+  if (
+    !hasSufficientEvidence({
+      query,
+      queryTokens,
+      intent: rankResult.intent,
+      ranked,
+    })
+  ) {
+    return noEvidenceResult(input.lang);
   }
 
   const filteredRanked = pickProfileRankedContext({
@@ -1380,7 +1557,19 @@ export async function answerFromCorpusWithLlm(input: {
   const { ranked, intent } = rankCorpus({ query, corpus });
 
   if (ranked.length === 0) {
-    return emptyResult(input.lang);
+    return noEvidenceResult(input.lang);
+  }
+
+  const queryTokens = toTokens(query);
+  if (
+    !hasSufficientEvidence({
+      query,
+      queryTokens,
+      intent,
+      ranked,
+    })
+  ) {
+    return noEvidenceResult(input.lang);
   }
 
   const filteredRanked = pickProfileRankedContext({

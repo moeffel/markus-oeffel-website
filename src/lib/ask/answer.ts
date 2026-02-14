@@ -755,9 +755,7 @@ async function buildCorpus(lang: Language): Promise<CorpusChunk[]> {
     sectionId: "copy",
     text: [
       contact.subtitle,
-      `${contact.asideTitle}: ${contact.asideBody}`,
-      `${contact.responseLabel}: ${contact.responseValue}`,
-      `${contact.scopeLabel}: ${contact.scopeValue}`,
+      ...contact.contactNotes,
     ].join("\n"),
   });
 
@@ -773,15 +771,24 @@ async function buildCorpus(lang: Language): Promise<CorpusChunk[]> {
         ];
 
   for (const legalPage of legalPages) {
+    const sectionLines = legalPage.page.sections.flatMap((section) => {
+      const description = ("description" in section ? section.description : "") ?? "";
+      const paragraphs = ("paragraphs" in section ? section.paragraphs : []) ?? [];
+      const listItems = ("listItems" in section ? section.listItems : []) ?? [];
+      const infoItems = ("infoItems" in section ? section.infoItems : []) ?? [];
+
+      return [
+        section.title,
+        description,
+        ...paragraphs,
+        ...listItems,
+        ...infoItems.map((item) => `${item.label}: ${item.value}`),
+      ];
+    });
+
     const legalText = [
       legalPage.page.subtitle,
-      ...legalPage.page.sections.flatMap((section) => [
-        section.title,
-        section.description ?? "",
-        ...(section.paragraphs ?? []),
-        ...(section.listItems ?? []),
-        ...(section.infoItems?.map((item) => `${item.label}: ${item.value}`) ?? []),
-      ]),
+      ...sectionLines,
       legalPage.page.note ?? "",
     ]
       .filter(Boolean)

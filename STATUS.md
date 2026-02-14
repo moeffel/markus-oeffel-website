@@ -8,6 +8,24 @@ Stand: 2026-02-11
 - Spezifikation in `fintech-wow-portfolio-spec/SPEC/*` ist weiterhin mit `Status: Draft` markiert.
 - Git-Repository ist initialisiert, aber ohne Commit-Historie (alles aktuell uncommitted).
 
+## Neuer Ausbau-Loop (2026-02-13, Design + Content Cleanup)
+
+- Landing auf „About me first“ geschärft:
+  - KPI-Kacheln (`Assets/Horizons/Risk`) aus dem Hero-Aside entfernt.
+  - RAG-Embed auf der Startseite entfernt; Ask bleibt als schlanker CTA.
+  - About-Bereich erweitert (Agentic Engineering, Innovation Management, Sales Enablement).
+- Kontakt-/CV-Flow angepasst:
+  - Experience-CTA von „Download CV“ auf „CV per Mail anfragen“ umgestellt.
+  - Prefilled CV-Request im Contact-Form mit Pflichtfeld-Hinweis und fixiertem Intent.
+- Skills-Seite farbiger umgesetzt:
+  - stärkere Category-Akzente, gradient surfaces, farbige Item-Signale.
+- Projects bewusst auf aktuelle Kerncases begrenzt:
+  - öffentlich nur `markus-oeffel-website` und `thesis`.
+  - „More is coming soon“ + GitHub-Verweis bleibt aktiv.
+- Private-RAG-Notizen erweitert:
+  - `private_corpus/about_me_rag.md` als strukturierte private Wissensbasis aktualisiert (gitignored).
+  - `private_corpus/about_me_rag.example.md` und `private_corpus/README.md` konkretisiert.
+
 ## Neuer Ausbau-Loop (2026-02-13)
 
 - RAG-Qualität für Karrierefragen geschärft:

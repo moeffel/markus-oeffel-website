@@ -53,9 +53,9 @@ async function checkCorePages() {
     },
     {
       journey: "J1",
-      path: "/en/projects/financing-analytics-ai-taskforce",
+      path: "/en/projects/markus-oeffel-website",
       mustContain: [
-        "Financing analytics & AI taskforce",
+        "Markus Öffel's Website",
         "Context",
         "Problem",
         "Impact",
@@ -79,7 +79,7 @@ async function checkCorePages() {
     {
       journey: "J4",
       path: "/en/ask",
-      mustContain: ["Ask my work", "citations"],
+      mustContain: ["Ask me anything", "Ask about career, projects, thesis, or skills."],
     },
   ];
 

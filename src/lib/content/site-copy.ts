@@ -58,18 +58,21 @@ export const LANDING_COPY: Record<
     aboutEyebrow: "Über mich",
     aboutTitle: "MSc Finance mit Tech-, Quant- und Delivery-Fokus.",
     aboutSubtitle:
-      "Ich kombiniere Finance-Ausbildung, Datenanalyse und praktische Produktarbeit in einem klaren Umsetzungsstil.",
+      "Ich verbinde Finance-Ausbildung, Produktarbeit und datenbasierte Umsetzung – pragmatisch, strukturiert und lernorientiert.",
     aboutParagraphs: [
-      "Aktuell arbeite ich als Product Owner im Finanzierungsumfeld und in einer internen AI-Taskforce.",
-      "Mein fachlicher Kern ist Finance + Analytics: von Datenaufbereitung und Zeitreihenlogik bis zu management-tauglichen Entscheidungen.",
-      "Meine Masterarbeit fokussiert ARIMA-GARCH, Rolling Backtests und VaR-Bewertung für Krypto-Märkte.",
+      "Aktuell arbeite ich als Product Owner im Finanzierungsumfeld und treibe in einer internen AI-Taskforce erste Agentic- und Automations-Workflows voran.",
+      "In meiner täglichen Arbeit verbinde ich Sales-, Finance- und Produktperspektive: von sauberer Datengrundlage bis zur Entscheidungsvorlage für Management und Vertrieb.",
+      "Mein quantitativer Schwerpunkt liegt auf Zeitreihen, Volatilität und Risikoevaluation – umgesetzt in reproduzierbaren Analysen statt Einmal-Auswertungen.",
+      "Innovation Management ist für mich praktische Routine: neue Perspektiven testen, Annahmen explizit machen, und schnell in belastbare Prototypen überführen.",
+      "Die Masterarbeit zu ARIMA-GARCH ergänzt das Profil durch methodische Tiefe in Forecasting, Backtesting und VaR-Logik.",
     ],
     aboutHighlights: [
-      "Finance: Corporate Finance, Investments, Risikobeurteilung, Zins- und Szenariologik.",
+      "Agentic Engineering: Orchestrierung, Spezifikation, Testing und geschlossene agentische Loops.",
+      "Innovation Management: kreative Ansätze, neue Blickwinkel, strukturierte Experimente.",
+      "Sales Enablement: kundenzentrierte Insights und Werkzeuge für data-driven Decisions.",
       "Quant/Data: Zeitreihen, Volatilitätsmodelle, Backtesting, Statistik, SQL/Python.",
-      "AI/Delivery: RAG-Grundlagen, Prompt-Workflows, nutzbare Business-Prototypen.",
     ],
-    askTitle: "You can ask anything about me.",
+    askTitle: "Ask me anything.",
     askSubtitle:
       "Frag zu Projekten, Werdegang, Thesis oder Skills. Antworten basieren auf den Website-Inhalten mit Quellen.",
     askExamplePrompts: [
@@ -126,18 +129,21 @@ export const LANDING_COPY: Record<
     aboutEyebrow: "About me",
     aboutTitle: "MSc finance profile with tech and quant focus.",
     aboutSubtitle:
-      "I combine finance education, data analysis, and practical product work in one delivery style.",
+      "I combine finance education, product execution, and data-driven delivery in one practical operating style.",
     aboutParagraphs: [
-      "I currently work as a product owner in financing and contribute to an internal AI taskforce.",
-      "My core is finance + analytics: from data preparation and time-series logic to management-ready decisions.",
-      "My master’s thesis focuses on ARIMA-GARCH, rolling backtests, and VaR evaluation in crypto markets.",
+      "I currently work as a product owner in financing and help shape first agentic and automation workflows in an internal AI taskforce.",
+      "In daily execution, I connect sales, finance, and product views—from clean data foundations to management-ready decision input.",
+      "My quantitative focus is time series, volatility, and risk evaluation delivered through reproducible analysis rather than one-off reports.",
+      "Innovation management is part of my operating model: test new perspectives, make assumptions explicit, and turn learnings into practical prototypes.",
+      "My ARIMA-GARCH thesis adds method depth in forecasting, backtesting, and VaR logic.",
     ],
     aboutHighlights: [
-      "Finance: corporate finance, investments, risk framing, and rate scenario logic.",
+      "Agentic Engineering: orchestration, specification, testing, and closed agentic loops.",
+      "Innovation Management: creative approaches, new perspectives, and structured experimentation.",
+      "Sales Enablement: customer-centered insights and tooling for data-driven decisions.",
       "Quant/Data: time series, volatility models, backtesting, statistics, SQL/Python.",
-      "AI/Delivery: RAG basics, prompt workflows, and practical business prototypes.",
     ],
-    askTitle: "You can ask anything about me.",
+    askTitle: "Ask me anything.",
     askSubtitle:
       "Ask about projects, career, thesis, or skills. Answers stay grounded in site content with citations.",
     askExamplePrompts: [
@@ -184,36 +190,28 @@ export const CONTACT_COPY: Record<
     eyebrow: string;
     title: string;
     subtitle: string;
-    asideTitle: string;
-    asideBody: string;
-    responseLabel: string;
-    responseValue: string;
-    scopeLabel: string;
-    scopeValue: string;
+    contactNotes: readonly string[];
   }
 > = {
   de: {
     eyebrow: "Start a project",
     title: "Kontakt",
     subtitle: "Schreib kurz, worum es geht.",
-    asideTitle: "Prefer async?",
-    asideBody:
-      "Schick Kontext + Ziel + Deadline. Du bekommst einen klaren Plan als Antwort.",
-    responseLabel: "Response",
-    responseValue: "Innerhalb von 24h",
-    scopeLabel: "Scope",
-    scopeValue: "FinTech, Risk, AI, Data",
+    contactNotes: [
+      "Pflichtfelder: Name, E-Mail, Nachricht.",
+      "CV-Anfrage direkt über den vorbereiteten Contact-Flow möglich.",
+      "Fokus: FinTech, Quant, AI, Innovation und Sales Enablement.",
+    ],
   },
   en: {
     eyebrow: "Start a project",
     title: "Contact",
     subtitle: "Send a short note.",
-    asideTitle: "Prefer async?",
-    asideBody: "Send context + goal + deadline. You’ll get a clear execution plan.",
-    responseLabel: "Response",
-    responseValue: "Within 24h",
-    scopeLabel: "Scope",
-    scopeValue: "FinTech, risk, AI, data",
+    contactNotes: [
+      "Required fields: name, email, and message.",
+      "CV request is supported via the prefilled contact flow.",
+      "Focus: fintech, quant, AI, innovation, and sales enablement.",
+    ],
   },
 };
 

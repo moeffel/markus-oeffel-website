@@ -456,9 +456,7 @@ function staticSiteCopyChunks(lang: "de" | "en"): RagChunkInput[] {
     contact.title,
     contact.subtitle,
     "",
-    `${contact.asideTitle}: ${contact.asideBody}`,
-    `${contact.responseLabel}: ${contact.responseValue}`,
-    `${contact.scopeLabel}: ${contact.scopeValue}`,
+    ...contact.contactNotes,
   ].join("\n");
   {
     chunks.push(

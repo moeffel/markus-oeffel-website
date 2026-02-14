@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { TurnstileWidget } from "@/components/turnstile";
@@ -21,14 +21,41 @@ type ContactErrorResponse =
   | { error: "provider_not_configured" }
   | { error: "provider_error"; detail?: string | null };
 
+function parseIntent(
+  value: string | null,
+): "employer" | "client" | "other" | null {
+  if (value === "employer" || value === "client" || value === "other") {
+    return value;
+  }
+  return null;
+}
+
+function cvRequestTemplate(lang: Language): string {
+  return lang === "de"
+    ? "Hallo Markus,\n\nich möchte deinen aktuellen CV anfordern.\n\nKontext:\nRolle/Firma:\nWarum ich mich melde:\n\nViele Grüße"
+    : "Hi Markus,\n\nI would like to request your current CV.\n\nContext:\nRole/company:\nWhy I am reaching out:\n\nBest regards";
+}
+
 export function ContactForm({ lang }: { lang: Language }) {
   const searchParams = useSearchParams();
+  const template = searchParams.get("template");
+  const isCvRequestFromUrl = template === "cv-request";
+  const intentFromUrl = parseIntent(searchParams.get("intent"));
+  const initialIntent = isCvRequestFromUrl
+    ? "employer"
+    : (intentFromUrl ?? "other");
+
   const [state, setState] = useState<ContactState>({ kind: "idle" });
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(
+    isCvRequestFromUrl ? cvRequestTemplate(lang) : "",
+  );
   const [company, setCompany] = useState("");
-  const [intent, setIntent] = useState<"employer" | "client" | "other">("other");
+  const [intent, setIntent] = useState<"employer" | "client" | "other">(
+    initialIntent,
+  );
+  const [isCvRequest] = useState(isCvRequestFromUrl);
 
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
   const [captchaRequired, setCaptchaRequired] = useState(false);
@@ -38,28 +65,6 @@ export function ContactForm({ lang }: { lang: Language }) {
     "h-11 w-full rounded-xl border border-white/15 bg-[rgba(6,12,22,0.78)] px-3 text-sm outline-none transition focus:border-[var(--accent-cyan)]/70 focus:ring-2 focus:ring-[rgba(93,217,255,0.2)]";
   const textareaClassName =
     "w-full rounded-xl border border-white/15 bg-[rgba(6,12,22,0.78)] px-3 py-2 text-sm outline-none transition focus:border-[var(--accent-cyan)]/70 focus:ring-2 focus:ring-[rgba(93,217,255,0.2)]";
-
-  useEffect(() => {
-    const intentParam = searchParams.get("intent");
-    if (
-      intentParam === "employer" ||
-      intentParam === "client" ||
-      intentParam === "other"
-    ) {
-      setIntent(intentParam);
-    }
-
-    const template = searchParams.get("template");
-    if (template === "cv-request") {
-      setMessage((prev) =>
-        prev.trim()
-          ? prev
-          : lang === "de"
-            ? "Hallo Markus,\n\nich möchte deinen aktuellen CV anfordern.\n\nKontext:\nRolle/Firma:\nWarum ich mich melde:\n\nViele Grüße"
-            : "Hi Markus,\n\nI would like to request your current CV.\n\nContext:\nRole/company:\nWhy I am reaching out:\n\nBest regards",
-      );
-    }
-  }, [searchParams, lang]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -175,6 +180,13 @@ export function ContactForm({ lang }: { lang: Language }) {
 
   return (
     <form onSubmit={onSubmit} className="mt-6 space-y-5">
+      {isCvRequest ? (
+        <div className="rounded-xl border border-[var(--accent-cyan)]/35 bg-[rgba(53,242,209,0.09)] px-4 py-3 text-xs text-[var(--accent-cyan)]">
+          {lang === "de"
+            ? "CV-Request aktiv: Name, E-Mail und Nachricht sind erforderlich."
+            : "CV request mode active: name, email, and message are required."}
+        </div>
+      ) : null}
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="space-y-2 text-sm">
           <span className="text-xs font-medium text-foreground/70">
@@ -210,6 +222,7 @@ export function ContactForm({ lang }: { lang: Language }) {
           onChange={(e) =>
             setIntent(e.target.value as "employer" | "client" | "other")
           }
+          disabled={isCvRequest}
           className={fieldClassName}
         >
           <option value="employer">{lang === "de" ? "Arbeitgeber" : "Employer"}</option>

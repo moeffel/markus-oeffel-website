@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import type { Language } from "@/lib/i18n";
-import { getExperience, getSiteSettings } from "@/lib/content";
+import { getExperience } from "@/lib/content";
 import type { Domain } from "@/lib/content/schemas";
 import { alternatesForPath } from "@/lib/seo";
 
@@ -50,10 +51,7 @@ export default async function ExperiencePage({
   params: Promise<{ lang: Language }>;
 }) {
   const { lang } = await params;
-  const [experience, settings] = await Promise.all([
-    getExperience(),
-    getSiteSettings(),
-  ]);
+  const experience = await getExperience();
   const uniqueTechCount = new Set(experience.flatMap((item) => item.tech)).size;
   const uniqueDomainCount = new Set(
     experience.flatMap((item) => item.domains),
@@ -87,15 +85,17 @@ export default async function ExperiencePage({
               {uniqueTechCount} {lang === "de" ? "Tech-Themen" : "tech topics"}
             </span>
           </div>
-          {settings.cvUrl ? (
-            <a
-              href={settings.cvUrl}
-              rel="noreferrer"
-              className="finance-ring mt-5 inline-flex h-10 items-center justify-center rounded-full bg-gradient-to-r from-[var(--finance-gold)] to-[#c89e55] px-4 text-xs font-semibold text-[#131922] transition hover:brightness-110"
-            >
-              {lang === "de" ? "CV downloaden" : "Download CV"}
-            </a>
-          ) : null}
+          <Link
+            href={`/${lang}/contact?intent=employer&template=cv-request`}
+            className="finance-ring mt-5 inline-flex h-10 items-center justify-center rounded-full bg-gradient-to-r from-[var(--finance-gold)] to-[#c89e55] px-4 text-xs font-semibold text-[#131922] transition hover:brightness-110"
+          >
+            {lang === "de" ? "CV per Mail anfragen" : "Request CV by email"}
+          </Link>
+          <p className="mt-2 text-xs text-foreground/60">
+            {lang === "de"
+              ? "Die Anfrage läuft über das Kontaktformular mit Pflichtfeldern (Name, E-Mail, Nachricht)."
+              : "Request flow uses the contact form with required fields (name, email, message)."}
+          </p>
         </div>
       </header>
 

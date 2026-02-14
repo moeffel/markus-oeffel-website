@@ -28,7 +28,9 @@ export default async function ProjectsPage({
   params: Promise<{ lang: Language }>;
 }) {
   const { lang } = await params;
-  const projects = await getCaseStudies({ publishedOnly: true });
+  const projects = (await getCaseStudies({ publishedOnly: true })).filter((project) =>
+    ["markus-oeffel-website", "thesis"].includes(project.slug),
+  );
 
   return <ProjectsIndex lang={lang} projects={projects} />;
 }

@@ -53,12 +53,9 @@ export function AskClient({
 }) {
   const [query, setQuery] = useState("");
   const [state, setState] = useState<AskState>({ kind: "idle" });
-  const [history, setHistory] = useState<
-    Array<{ q: string; a: AskResponse | null }>
-  >([]);
 
   const [answerMarkdown, setAnswerMarkdown] = useState("");
-  const [showCitations, setShowCitations] = useState(variant !== "embed");
+  const [showCitations, setShowCitations] = useState(false);
 
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
   const [captchaToken, setCaptchaToken] = useState("");
@@ -159,7 +156,6 @@ export function AskClient({
     try {
       const data = await runAskStream(q);
       setState({ kind: "done", data });
-      setHistory((h) => [...h, { q, a: data }]);
       return;
     } catch (err) {
       const msg = String(err instanceof Error ? err.message : err);
@@ -195,7 +191,6 @@ export function AskClient({
               ? "AI Budget erreicht. Bitte später erneut versuchen oder Kontakt aufnehmen."
               : "AI budget exceeded. Please try again later or contact me.",
         });
-        setHistory((h) => [...h, { q, a: null }]);
         return;
       }
 
@@ -216,13 +211,11 @@ export function AskClient({
           kind: "error",
           message: lang === "de" ? "Ask API Fehler." : "Ask API error.",
         });
-        setHistory((h) => [...h, { q, a: null }]);
         return;
       }
 
       setAnswerMarkdown(data.answer);
       setState({ kind: "done", data });
-      setHistory((h) => [...h, { q, a: data }]);
     }
   }
 
@@ -333,21 +326,19 @@ export function AskClient({
               <p className="text-xs font-medium text-foreground/70">
                 Citations ({state.data.citations.length})
               </p>
-              {variant === "embed" ? (
-                <button
-                  type="button"
-                  onClick={() => setShowCitations((s) => !s)}
-                  className="rounded-full border border-white/15 px-3 py-1 text-xs font-medium text-foreground/75 transition hover:border-[var(--accent-cyan)]/45 hover:text-[var(--accent-cyan)]"
-                >
-                  {showCitations
-                    ? lang === "de"
-                      ? "Ausblenden"
-                      : "Hide"
-                    : lang === "de"
-                      ? "Zeigen"
-                      : "Show"}
-                </button>
-              ) : null}
+              <button
+                type="button"
+                onClick={() => setShowCitations((s) => !s)}
+                className="rounded-full border border-white/15 px-3 py-1 text-xs font-medium text-foreground/75 transition hover:border-[var(--accent-cyan)]/45 hover:text-[var(--accent-cyan)]"
+              >
+                {showCitations
+                  ? lang === "de"
+                    ? "Ausblenden"
+                    : "Hide"
+                  : lang === "de"
+                    ? "Zeigen"
+                    : "Show"}
+              </button>
             </div>
             {state.data.citations.length === 0 ? (
               <p className="text-sm text-foreground/70">
@@ -372,25 +363,6 @@ export function AskClient({
               </ul>
             ) : null}
           </div>
-        </div>
-      ) : null}
-
-      {variant === "page" && history.length ? (
-        <div className="mt-8 border-t border-black/5 pt-6 dark:border-white/10">
-          <p className="text-xs font-medium text-foreground/70">
-            {lang === "de" ? "History" : "History"}
-          </p>
-          <ul className="mt-3 space-y-2 text-sm text-foreground/75">
-            {history
-              .slice()
-              .reverse()
-              .slice(0, 5)
-              .map((h, i) => (
-                <li key={`${h.q}:${i}`} className="truncate">
-                  {h.q}
-                </li>
-              ))}
-          </ul>
         </div>
       ) : null}
     </div>

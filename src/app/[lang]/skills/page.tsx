@@ -77,18 +77,33 @@ export default async function SkillsPage({
       <section className="grid gap-4 sm:grid-cols-2">
         {categories.map((category, index) => {
           const accent = accentByIndex[index % accentByIndex.length];
+          const accentGlow =
+            index % 3 === 0
+              ? "rgba(53,242,209,0.2)"
+              : index % 3 === 1
+                ? "rgba(154,123,255,0.2)"
+                : "rgba(166,255,94,0.18)";
           return (
           <article
             key={category.title.en}
             className="surface-card rounded-3xl p-6"
             style={{
               borderColor: "var(--line-strong)",
+              backgroundImage: `linear-gradient(150deg, ${accentGlow} 0%, rgba(18,27,51,0.44) 58%, rgba(18,27,51,0.62) 100%)`,
             }}
           >
-            <span
-              className="mb-4 block h-1.5 w-20 rounded-full"
-              style={{ background: accent }}
-            />
+            <div className="mb-4 flex items-center gap-2">
+              <span
+                className="block h-1.5 w-20 rounded-full"
+                style={{ background: accent }}
+              />
+              <span
+                className="rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-[0.12em] uppercase"
+                style={{ borderColor: `${accent}55`, color: accent }}
+              >
+                Track {index + 1}
+              </span>
+            </div>
             <h2 className="text-xl font-semibold tracking-tight text-foreground">
               {category.title[lang]}
             </h2>
@@ -96,10 +111,19 @@ export default async function SkillsPage({
               {category.items.map((item) => (
                 <li
                   key={item.name}
-                  className="rounded-2xl border bg-[rgba(8,16,28,0.58)] p-4"
-                  style={{ borderColor: `${accent}44` }}
+                  className="rounded-2xl border bg-[rgba(8,16,28,0.62)] p-4"
+                  style={{
+                    borderColor: `${accent}55`,
+                    boxShadow: `inset 0 0 0 1px ${accent}22`,
+                  }}
                 >
-                  <p className="text-sm font-semibold text-foreground">{item.name}</p>
+                  <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                    <span
+                      className="inline-block h-2 w-2 rounded-full"
+                      style={{ background: accent }}
+                    />
+                    {item.name}
+                  </p>
                   {item.note ? (
                     <p className="mt-1 text-sm text-foreground/70">{item.note[lang]}</p>
                   ) : null}
